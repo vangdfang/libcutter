@@ -1,3 +1,6 @@
 Serial communications and a simple test application for interfacing with cutters.
 
 Film at 11.
+
+Suggested bcpp command:
+bcpp -s -f 2 -i 4 -bnl -fi $in -fo $out
