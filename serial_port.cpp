@@ -1,7 +1,8 @@
 #include "serial_port.hpp"
 #include <cstdio>
 #include <sys/ioctl.h>
-#include <linux/serial.h>
+#include <termios.h>
+#include <sys/types.h>
 #include <cstdlib>
 #include <fcntl.h>
 #include <sys/time.h>
@@ -9,6 +10,8 @@
 #include <cmath>
 #include <string>
 using std::size_t;
+
+#include <iostream>
 using namespace std;
 
 
@@ -20,7 +23,6 @@ fd = -1;
 serial_port::~serial_port()
 {
 p_close();
-printf("port closed\n");
 }
 
 bool serial_port::is_open()
@@ -28,25 +30,33 @@ bool serial_port::is_open()
 return fd >= 0;
 }
 
-serial_port::serial_port( const char * filename )
+serial_port::serial_port( const string & filename )
 {
 p_open( filename );
 }
 
-void serial_port::p_open( const char * filename )
+void serial_port::p_open( const string & filename )
 {
 termios newtio;
 serial_struct sstruct;
 
-fd = open( filename, O_RDWR | O_NOCTTY );
+fd = open( filename.c_str(), O_RDWR | O_NOCTTY );
 if( fd >= 0 )
 	{
 	tcgetattr( fd, &oldtio );
 	memset( &newtio, 0x00, sizeof( newtio ) );
-	newtio.c_cflag = BAUD_RATE | CS8 | CLOCAL | CREAD | CSTOPB;
-	newtio.c_iflag = IGNPAR | ICRNL;
-	newtio.c_oflag = 0;
-	newtio.c_lflag = ICANON;
+	newtio.c_cflag &= ~( PARENB | CSTOPB | CSIZE );
+	newtio.c_cflag |= BAUD_RATE | CS8 | CLOCAL | CREAD | CSTOPB;
+
+	newtio.c_iflag &= ~( IXON | IXOFF | INLCR | IGNCR | ICRNL | IUCLC | IMAXBEL | PARMRK );
+	newtio.c_iflag |= IGNPAR | IGNBRK | ISTRIP | INPCK ;
+
+	newtio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG );
+	newtio.c_oflag &= ~OPOST;
+	newtio.c_cc[VMIN]  = 5;
+	newtio.c_cc[VTIME] = 0;
+	//255;
+
 	tcflush(fd, TCIFLUSH);
 	tcsetattr(fd,TCSANOW,&newtio);
 
@@ -65,9 +75,9 @@ if( fd >= 0 )
 #ifdef SERIAL_PORT_DEBUG_MODE
 #if SERIAL_PORT_DEBUG_MODE
 char cmd[100];
-sprintf(cmd, "stty -F %s", filename);
+sprintf(cmd, "stty -F %s", filename.c_str() );
 system(cmd);
-sprintf(cmd, "setserial -a %s", filename);
+sprintf(cmd, "setserial -a %s", filename.c_str() );
 system(cmd);
 #endif
 #endif
@@ -84,60 +94,17 @@ if( fd >= 0 )
 	}
 }
 
-int serial_port::p_get()
-{
-uint8_t buf;
-
-if( read( fd, &buf, 1 ) != 1 )
-	{
-	return -1;
-	}
-else
-	{
-	return buf;
-	}
-}
-
-bool serial_port::p_put( uint8_t buf )
-{
-write( fd, &buf, 1 );
-fsync( fd );
-}
-
 size_t serial_port::p_write( const uint8_t * data, size_t size )
 {
-double s = getTime();
-double t = getTime();
 int    i;
 int    count = 0;
-
+	uint64_t t1 = getTime();
 for( i = 0; i < size; ++i )
 	{
-	if( count != 0 )
-		{
-		double dt = getTime() - t;
-		double delta = 0;
-		if( fabs( dt ) < TIMING_GOAL - TIMING_CONSTRAINT )
-			{
-			delta = TIMING_GOAL - TIMING_CONSTRAINT - fabs( dt );
-			delta *= -1;
-			}
-		else if( fabs( dt ) > TIMING_GOAL + TIMING_CONSTRAINT )
-			{
-			delta = fabs( dt ) - TIMING_GOAL - TIMING_CONSTRAINT;
-			}
-
-		if( delta )
-			{
-			printf("WARNING:Serial Timing constrain violation by %f seconds\n", (float)dt );
-			}
-		}
-
-	t = getTime();
+	usleep(100);
 
 	if( write( fd, data, 1 ) == 1 )
 		{
-		fsync( fd );
 		data++;
 		count++;
 		}
@@ -147,19 +114,22 @@ for( i = 0; i < size; ++i )
 		}
 
 	}
-
-printf("Took %f seconds to write\n", (float)(getTime()-s) );
+std::cout << getTime() - t1 << std::endl;
 return count;
 }
 
 size_t serial_port::p_read(  const uint8_t * data, size_t size )
 {
+if( fd < 0 )
+	{
+	cout<<"Error reading from closed port"<<endl;
+	}
 return read( fd, (void*)data, size );
 }
 
-const double serial_port::getTime( void )
+const uint64_t serial_port::getTime( void )
 {
 timeval tv;
 gettimeofday( &tv, NULL );
-return (double)( (long double)tv.tv_sec + (long double)tv.tv_usec / (long double) 1000000 );
+return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
 }
