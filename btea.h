@@ -2,10 +2,10 @@
 extern "C"
 {
 #endif
-#ifndef BTEA_H
-#define BTEA_H
-void btea(unsigned int *v, int n, unsigned int const k[4]);
-#endif
+    #ifndef BTEA_H
+    #define BTEA_H
+    void btea(unsigned int *v, int n, unsigned int const k[4]);
+    #endif
 #ifdef __cplusplus
 }
 #endif

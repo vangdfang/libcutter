@@ -9,5 +9,4 @@ int main(int argc, char* argv[]);
 void clean_up(int signal);
 
 static std::vector<serial_port*> ports;
-
 #endif

@@ -46,130 +46,129 @@ static bool running = true;
 
 void * thread( void * ptr )
 {
-xy startpt={3,4};
-Device::C c( cutter_device );
+    xy startpt={3,4};
+    Device::C c( cutter_device );
 
-ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3};
-c.set_move_key(move_key);
+    ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3};
+    c.set_move_key(move_key);
 
-ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
-c.set_line_key(line_key);
+    ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
+    c.set_line_key(line_key);
 
-c.stop();
-c.start();
+    c.stop();
+    c.start();
 
-c.move_to(startpt);
+    c.move_to(startpt);
 
-while( running )
-	{
-	if( tool_down )
-		{
-		cout<<"Cutting to "<<pt.x<<" "<<pt.y<<endl;
-		c.cut_to(pt);
-		}
-	else
-		{
-		cout<<"Moving  to "<<pt.x<<" "<<pt.y<<endl;
-		c.move_to(pt);
-		}
-	}
+    while( running )
+    {
+        if( tool_down )
+        {
+            cout<<"Cutting to "<<pt.x<<" "<<pt.y<<endl;
+            c.cut_to(pt);
+        }
+        else
+        {
+            cout<<"Moving  to "<<pt.x<<" "<<pt.y<<endl;
+            c.move_to(pt);
+        }
+    }
 }
 
 
 int main (int argc, char **argv)
 {
-	int fd;
-	unsigned char axes = 2;
-	unsigned char buttons = 2;
-	int version = 0x000800;
-	char name[NAME_LENGTH] = "Unknown";
+    int fd;
+    unsigned char axes = 2;
+    unsigned char buttons = 2;
+    int version = 0x000800;
+    char name[NAME_LENGTH] = "Unknown";
 
-	if (argc != 3)
-		{
-		puts("Usage: jsdrive <joydevice> <cutterdevice>");
-		exit(1);
-		}
+    if (argc != 3)
+    {
+        puts("Usage: jsdrive <joydevice> <cutterdevice>");
+        exit(1);
+    }
 
-	strcpy( cutter_device, argv[2] );
+    strcpy( cutter_device, argv[2] );
 
+    if ((fd = open(argv[1], O_RDONLY)) < 0)
+    {
+        perror("jsdrive");
+        exit(3);
+    }
 
-	if ((fd = open(argv[1], O_RDONLY)) < 0)
-		{
-		perror("jsdrive");
-		exit(3);
-		}
+    //	fcntl(fd, F_SETFL, O_NONBLOCK);
 
-//	fcntl(fd, F_SETFL, O_NONBLOCK);
+    ioctl(fd, JSIOCGVERSION, &version);
+    ioctl(fd, JSIOCGAXES, &axes);
+    ioctl(fd, JSIOCGBUTTONS, &buttons);
+    ioctl(fd, JSIOCGNAME(NAME_LENGTH), name);
 
+    printf("Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
+        name, axes, buttons, version >> 16, (version >> 8) & 0xff, version & 0xff);
+    printf("Testing ... (interrupt to exit)\n");
 
-	ioctl(fd, JSIOCGVERSION, &version);
-	ioctl(fd, JSIOCGAXES, &axes);
-	ioctl(fd, JSIOCGBUTTONS, &buttons);
-	ioctl(fd, JSIOCGNAME(NAME_LENGTH), name);
+    if (argc == 3 )
+    {
+        int *axis;
+        int *button;
+        int i;
+        struct js_event js;
+        int *oldaxis;
+        int *oldbutton;
 
-	printf("Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
-		name, axes, buttons, version >> 16, (version >> 8) & 0xff, version & 0xff);
-	printf("Testing ... (interrupt to exit)\n");
+        axis      = (int*)calloc(axes,    sizeof(int)  );
+        oldaxis   = (int*)calloc(axes,    sizeof(int)  );
+        button    = (int*)calloc(buttons, sizeof(char) );
+        oldbutton = (int*)calloc(buttons, sizeof(char) );
 
-	if (argc == 3 )
-		{
-		int *axis;
-		int *button;
-		int i;
-		struct js_event js;
-		int *oldaxis;
-		int *oldbutton;
+        pthread_t tid;
+        pthread_create( &tid, NULL, thread, NULL );
 
-		axis      = (int*)calloc(axes,    sizeof(int)  );
-		oldaxis   = (int*)calloc(axes,    sizeof(int)  );
-		button    = (int*)calloc(buttons, sizeof(char) );
-		oldbutton = (int*)calloc(buttons, sizeof(char) );
+        while (1)
+        {
+            struct js_event old_js = js;
+            if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event))
+            {
+                perror("\njsdrive: error reading");
+                exit (1);
+            }
 
-		pthread_t tid;
-		pthread_create( &tid, NULL, thread, NULL );
+            old_js = js;
+            switch(js.type & ~JS_EVENT_INIT)
+            {
+                case JS_EVENT_BUTTON:
+                    if( js.number == 0 )
+                    {
+                        tool_down = js.value;
+                    }
+                    button[js.number] = js.value;
+                    break;
+                case JS_EVENT_AXIS:
+                    axis[js.number] = js.value;
+                    break;
+            }
 
-		while (1)
-			{
-			struct js_event old_js = js;
-			if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event))
-				{
-				perror("\njsdrive: error reading");
-				exit (1);
-				}
+            printf("\r");
 
-			old_js = js;
-			switch(js.type & ~JS_EVENT_INIT)
-				{
-				case JS_EVENT_BUTTON:
-					if( js.number == 0 )
-						{
-						tool_down = js.value;
-						}
-					button[js.number] = js.value;
-					break;
-				case JS_EVENT_AXIS:
-					axis[js.number] = js.value;
-					break;
-				}
+            pt.x = (float)(((int)-axis[0])+32767) * 6.0 / 65535;
+            pt.y = (float)(((int) axis[1])+32767) * 6.0 / 65535 + 3;
+            cout<<"moving to:"<<pt.x<<' '<<pt.y<<endl;
 
-			printf("\r");
+            fflush(stdout);
+        }
+    }
 
-			pt.x = (float)(((int)-axis[0])+32767) * 6.0 / 65535;
-			pt.y = (float)(((int) axis[1])+32767) * 6.0 / 65535 + 3;
-			cout<<"moving to:"<<pt.x<<' '<<pt.y<<endl;
-
-			fflush(stdout);
-		}
-	}
-
-	return -1;
+    return -1;
 }
 
+
 /*
-	c.stop();
-	sleep(1);
-	c.start();
-	sleep(1);
-	c.move(pt);
-	sleep(3);
+    c.stop();
+    sleep(1);
+    c.start();
+    sleep(1);
+    c.move(pt);
+    sleep(3);
 */
