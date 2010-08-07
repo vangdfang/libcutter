@@ -13,9 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
- * Should you need to contact me, the author, you can do so either by
- * e-mail - mail your message to <vojtech@suse.cz>, or by paper mail:
- * Vojtech Pavlik, Ucitelska 1576, Prague 8, 182 00 Czech Republic
+ * Should you need to contact us, the author, you can do so either at
+ * http://github.com/vangdfang/libcutter, or by paper mail:
+ *
+ * libcutter Developers @ Cowtown Computer Congress
+ * 3101 Mercier Street #404, Kansas City, MO 64111
+ *
+ * This file was forked from jstest.c, by Vojtech Pavlik: vojtech@suse.cz
  */
 
 #include <sys/ioctl.h>
@@ -98,8 +102,6 @@ int main (int argc, char **argv)
         exit(3);
     }
 
-    //	fcntl(fd, F_SETFL, O_NONBLOCK);
-
     ioctl(fd, JSIOCGVERSION, &version);
     ioctl(fd, JSIOCGAXES, &axes);
     ioctl(fd, JSIOCGBUTTONS, &buttons);
@@ -162,13 +164,3 @@ int main (int argc, char **argv)
 
     return -1;
 }
-
-
-/*
-    c.stop();
-    sleep(1);
-    c.start();
-    sleep(1);
-    c.move(pt);
-    sleep(3);
-*/
