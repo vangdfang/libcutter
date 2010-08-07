@@ -2,8 +2,10 @@
 #define DEVICE_C_HPP
 
 #include <stdint.h>
+#include <cstring>
 #include "device.hpp"
 #include "types.h"
+#include "serial_port.hpp"
 
 typedef uint32_t ckey_type[4];
 
@@ -19,6 +21,7 @@ namespace Device
             /* virtual */ bool curve_to(const xy &p0, const xy &p1, const xy &p2, const xy &p3);
             /* virtual */ bool start();
             /* virtual */ bool stop();
+            /* virtual */ xy   get_dimensions();
             inline void set_move_key( ckey_type k )
             {
                 memcpy( m_move_key, k, sizeof(k)*4 );
@@ -38,6 +41,7 @@ namespace Device
             ckey_type m_move_key;
             ckey_type m_line_key;
             ckey_type m_curve_key;
+            serial_port m_serial;
     };
 }
 #endif

@@ -1,7 +1,6 @@
 #ifndef DEVICE_HPP
 #define DEVICE_HPP
 
-#include "serial_port.hpp"
 #include "types.h"
 #include <string>
 
@@ -22,10 +21,10 @@ namespace Device
             virtual bool curve_to(const xy &p0, const xy &p1, const xy &p2, const xy &p3) = 0;
             virtual bool start() = 0;
             virtual bool stop() = 0;
-            inline bool is_connected() { return m_serial.is_open(); }
+            inline bool is_connected() { return false; }
 
+            virtual xy get_dimensions() = 0;
         protected:
-            serial_port m_serial;
     };
 }
 #endif

@@ -98,4 +98,11 @@ namespace Device
         return ret;
     }
 
+    xy C::get_dimensions()
+    {
+        xy buf;
+        buf.x = 6;
+        buf.y = 12;
+        return buf;
+    }
 }
