@@ -126,9 +126,8 @@ void serial_port::p_close()
 
 size_t serial_port::p_write( const uint8_t * data, size_t size )
 {
-    unsigned int i;
-    int    count = 0;
-    uint64_t t1 = getTime();
+    size_t   i;
+    int      count = 0;
     for( i = 0; i < size; ++i )
     {
         usleep(1000);
@@ -144,7 +143,6 @@ size_t serial_port::p_write( const uint8_t * data, size_t size )
         }
 
     }
-    std::cout << getTime() - t1 << std::endl;
     return count;
 }
 
