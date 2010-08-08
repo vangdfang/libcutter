@@ -44,7 +44,7 @@ using namespace std;
 
 #include "device_cv_sim.hpp"
 
-static xy   pt={3,4};
+static xy   pt={3,-4};
 static bool tool_down = false;
 static bool running = true;
 
@@ -56,11 +56,23 @@ void * thread( void * ptr )
     c.stop();
     c.start();
 
+    //set tool width to 1/10th of an inch
+    c.set_tool_width( .1 );
+
     c.move_to(startpt);
 
     cvNamedWindow("cutter");
     while( running )
     {
+        IplImage * image = c.get_image();
+        cvShowImage("cutter", image );
+        if( cvWaitKey(10) == ' ' )
+        {
+            //restart to write an image
+            c.stop();
+            c.start();
+        }
+
         if( tool_down )
         {
             cout<<"Cutting to "<<pt.x<<" "<<pt.y<<endl;
@@ -72,8 +84,12 @@ void * thread( void * ptr )
             c.move_to(pt);
         }
         cvShowImage("cutter", c.get_image() );
-        cvWaitKey(50);           //20FPS
+        cvWaitKey(10);
+
+        cvReleaseImage( &image );
     }
+
+    pthread_exit( NULL );
 }
 
 
@@ -102,7 +118,6 @@ int main (int argc, char **argv)
     {
         int *axis;
         int *button;
-        int i;
         struct js_event js;
         int *oldaxis;
         int *oldbutton;
@@ -141,7 +156,7 @@ int main (int argc, char **argv)
 
             printf("\r");
 
-            pt.x = (float)(((int)-axis[0])+32767) * 6.0 / 65535;
+            pt.x = (float)(((int) axis[0])+32767) * 6.0 / 65535;
             pt.y = (float)(((int) axis[1])+32767) * 6.0 / 65535;
             cout<<"moving to:"<<pt.x<<' '<<pt.y<<endl;
 

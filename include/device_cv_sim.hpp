@@ -43,13 +43,16 @@ namespace Device
             /* virtual */ bool start();
             /* virtual */ bool stop();
             /* virtual */ xy   get_dimensions();
-            inline IplImage * get_image(){return image;};
+            IplImage * get_image();
+            bool set_tool_width( const float tool_width );
+
         private:
             xy convert_to_internal( const xy &input );
             xy current_position;
             std::string output_filename;
             bool running;
             IplImage * image;
+            float tool_width;
     };
 }
 #endif

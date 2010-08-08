@@ -39,19 +39,21 @@ namespace Device
 
     CV_sim::CV_sim()
     {
-        running = false;
-        image = NULL;
+        running            = false;
+        image              = NULL;
         current_position.x = 0;
         current_position.y = 0;
+        tool_width         = 1;
     }
 
     CV_sim::CV_sim( const std::string filename )
     {
-        output_filename = filename;
-        running = false;
-        image = NULL;
+        output_filename    = filename;
+        running            = false;
+        image              = NULL;
         current_position.x = 0;
         current_position.y = 0;
+        tool_width         = 1;
     }
 
     bool CV_sim::move_to(const xy & aPoint )
@@ -83,7 +85,7 @@ namespace Device
                 cvPoint(    next_position.x,    next_position.y ),
                                  /*grey           */
                 cvScalar( 120, 120, 120 ),
-                1,               /*thickness      */
+                (int)tool_width, /*thickness      */
                 CV_AA,           /*antialiased    */
                 0                /*fractional bits*/
                 );
@@ -107,6 +109,7 @@ namespace Device
         if( image == NULL )
         {
             image = cvCreateImage( cvSize( DPI_X * DEFAULT_SIZE_X, DPI_Y * DEFAULT_SIZE_Y ), IPL_DEPTH_8U, 1 );
+            memset( image->imageData, 0x00, image->imageSize );
         }
         running = true;
         return true;
@@ -138,6 +141,40 @@ namespace Device
         xy buf;
         buf.x = DEFAULT_SIZE_X;
         buf.y = DEFAULT_SIZE_Y;
+        return buf;
+    }
+
+    bool CV_sim::set_tool_width( const float temp_tool_width )
+    {
+        if( temp_tool_width > 0 )
+        {
+            tool_width = fabs( temp_tool_width ) * DPI_X * DPI_Y / sqrt( DPI_X * DPI_Y ) + .5;
+            if( tool_width < 1 )
+            {
+                tool_width = 1;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    IplImage * CV_sim::get_image()
+    {
+        IplImage * new_image = cvCloneImage( image );
+        CvScalar rgb =
+        {
+            {
+                250, 250, 250
+            }
+        };
+        cvLine( new_image,
+            cvPoint( current_position.x, current_position.y ),
+            cvPoint( current_position.x, current_position.y ),
+            rgb,
+            25,
+            CV_AA,
+            0);
+        return new_image;
     }
 
 }                                /* end namespace*/
