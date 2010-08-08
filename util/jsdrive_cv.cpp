@@ -1,4 +1,7 @@
 /*
+ * jsdrive_cv - joystick control for (virtual) cutters
+ * Copyright (c) 2010 - libcutter Developers
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or

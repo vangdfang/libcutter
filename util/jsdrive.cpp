@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <signal.h>
 #include <pthread.h>
 
 #include <linux/joystick.h>
@@ -41,15 +42,27 @@ using namespace std;
 
 #define NAME_LENGTH 128
 
-static xy pt={3,4};
-static bool tool_down = false;
 static char cutter_device[1000];
-static bool running = true;
+struct run_data
+{
+    bool running;
+    xy pt;
+    bool tool_down;
+    pthread_mutex_t mutex;
+};
+static bool should_exit;
 
 #include "keys.h"
 
+void catch_sigint(int signal)
+{
+    cerr << "Shutting down..." << endl;
+    should_exit = true;
+}
+
 void * thread( void * ptr )
 {
+    run_data *status = (run_data *)ptr;
     xy startpt={3,4};
     Device::C c( cutter_device );
 
@@ -59,24 +72,43 @@ void * thread( void * ptr )
     ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
     c.set_line_key(line_key);
 
+    if( !c.is_open() )
+    {
+        pthread_mutex_lock(&status->mutex);
+        status->running=false;
+        pthread_mutex_unlock(&status->mutex);
+        pthread_exit(NULL);
+    }
+
     c.stop();
     c.start();
 
     c.move_to(startpt);
+    xy temp;
 
-    while( running )
+    pthread_mutex_lock(&status->mutex);
+    while( status->running )
     {
-        if( tool_down )
+        temp.x = status->pt.x;
+        temp.y = status->pt.y;
+        if( status->tool_down )
         {
-            cout<<"Cutting to "<<pt.x<<" "<<pt.y<<endl;
-            c.cut_to(pt);
+            cout<<"Cutting to "<<temp.x<<" "<<temp.y<<endl;
+            pthread_mutex_unlock(&status->mutex);
+            c.cut_to(temp);
+            pthread_mutex_lock(&status->mutex);
         }
         else
         {
-            cout<<"Moving  to "<<pt.x<<" "<<pt.y<<endl;
-            c.move_to(pt);
+            cout<<"Moving  to "<<temp.x<<" "<<temp.y<<endl;
+            pthread_mutex_unlock(&status->mutex);
+            c.move_to(temp);
+            pthread_mutex_lock(&status->mutex);
         }
     }
+    pthread_mutex_unlock(&status->mutex);
+    c.stop();
+    pthread_exit(NULL);
 }
 
 
@@ -87,6 +119,12 @@ int main (int argc, char **argv)
     unsigned char buttons = 2;
     int version = 0x000800;
     char name[NAME_LENGTH] = "Unknown";
+    run_data status;
+    status.running = true;
+    status.pt.x = 3;
+    status.pt.y = 4;
+    status.tool_down=false;
+    pthread_mutex_init(&status.mutex, NULL);
 
     if (argc != 3)
     {
@@ -95,8 +133,9 @@ int main (int argc, char **argv)
     }
 
     strcpy( cutter_device, argv[2] );
+    signal( SIGINT, catch_sigint );
 
-    if ((fd = open(argv[1], O_RDONLY)) < 0)
+    if ((fd = open(argv[1], O_RDONLY | O_NONBLOCK)) < 0)
     {
         perror("jsdrive");
         exit(3);
@@ -114,27 +153,30 @@ int main (int argc, char **argv)
     if (argc == 3 )
     {
         int *axis;
-        int *button;
-        int i;
+        char *button;
         struct js_event js;
-        int *oldaxis;
-        int *oldbutton;
 
-        axis      = (int*)calloc(axes,    sizeof(int)  );
-        oldaxis   = (int*)calloc(axes,    sizeof(int)  );
-        button    = (int*)calloc(buttons, sizeof(char) );
-        oldbutton = (int*)calloc(buttons, sizeof(char) );
+        axis      = (int *)calloc(axes,     sizeof(int)  );
+        button    = (char *)calloc(buttons, sizeof(char) );
 
         pthread_t tid;
-        pthread_create( &tid, NULL, thread, NULL );
+        pthread_create( &tid, NULL, thread, &status );
 
-        while (1)
+        pthread_mutex_lock(&status.mutex);
+        while (status.running)
         {
+            if( should_exit )
+            {
+                status.running=false;
+            }
+            pthread_mutex_unlock(&status.mutex);
             struct js_event old_js = js;
-            if (read(fd, &js, sizeof(struct js_event)) != sizeof(struct js_event))
+            if ( read( fd, &js, sizeof( struct js_event ) ) != sizeof( struct js_event )
+                && ( EAGAIN != errno && EWOULDBLOCK != errno ) )
             {
                 perror("\njsdrive: error reading");
-                exit (1);
+                should_exit=true;
+                continue;
             }
 
             old_js = js;
@@ -143,7 +185,9 @@ int main (int argc, char **argv)
                 case JS_EVENT_BUTTON:
                     if( js.number == 0 )
                     {
-                        tool_down = js.value;
+                        pthread_mutex_lock(&status.mutex);
+                        status.tool_down = js.value;
+                        pthread_mutex_unlock(&status.mutex);
                     }
                     button[js.number] = js.value;
                     break;
@@ -154,12 +198,19 @@ int main (int argc, char **argv)
 
             printf("\r");
 
-            pt.x = (float)(((int)-axis[0])+32767) * 6.0 / 65535;
-            pt.y = (float)(((int) axis[1])+32767) * 6.0 / 65535 + 3;
-            cout<<"moving to:"<<pt.x<<' '<<pt.y<<endl;
+            pthread_mutex_lock(&status.mutex);
+            status.pt.x = (float)(((int)-axis[0])+32767) * 6.0 / 65535;
+            status.pt.y = (float)(((int) axis[1])+32767) * 6.0 / 65535 + 3;
+            cout<<"moving to:"<<status.pt.x<<' '<<status.pt.y<<endl;
+            pthread_mutex_unlock(&status.mutex);
 
             fflush(stdout);
+            pthread_mutex_lock(&status.mutex);
         }
+        pthread_mutex_unlock(&status.mutex);
+        free(axis);
+        free(button);
+        pthread_join( tid, NULL );
     }
 
     return -1;

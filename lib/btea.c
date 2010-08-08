@@ -1,4 +1,3 @@
-//This code from wikipedia
 #include <stdint.h>
 
 void btea(unsigned int *v, int n, unsigned int const k[4])
