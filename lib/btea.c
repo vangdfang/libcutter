@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-long btea( long * v, long n , long * k )
+int btea( long * v, long n , long * k )
 {
     unsigned long z;
     unsigned long y;
@@ -22,7 +22,6 @@ long btea( long * v, long n , long * k )
     //( sqrt( 5 ) - 1 ) / 2
     const unsigned long DELTA=0x9e3779b9 ;
 
-    long m;
     long p;
     long q;
 
@@ -39,7 +38,7 @@ long btea( long * v, long n , long * k )
     sum = 0;
 
     //The core of the algorithm
-    #define MX() ( z >> 5 ^ y << 2) + ( y >> 3 ^ z << 4 )^( sum ^ y ) + ( k[ p & 3 ^ e ] ^ z )
+    #define MX() ( ( ( z >> 5 ) ^ ( y << 2 )) + ( ( y >> 3 ) ^ ( z << 4 ) ) ) ^ ( ( sum ^ y ) + ( k[ ( p & 3 ) ^ e ] ^ z ) )
 
     if ( n > 1 )
     {
@@ -57,7 +56,7 @@ long btea( long * v, long n , long * k )
             y = v[0];
             z = v[n-1] += MX();
         }
-        return 0 ;
+        return 0;
     }
     else if ( n <-1 )
     {
@@ -77,7 +76,8 @@ long btea( long * v, long n , long * k )
             y = v[0] -= MX();
             sum -= DELTA ;
         }
-        return 0 ;
+        return 0;
     }
-    //This is handled above
+    //This is handled above--but make the compiler happy
+    return 1;
 }

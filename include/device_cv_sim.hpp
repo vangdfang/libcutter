@@ -43,7 +43,7 @@ namespace Device
             /* virtual */ bool start();
             /* virtual */ bool stop();
             /* virtual */ xy   get_dimensions();
-			inline IplImage * get_image(){return image;};
+            inline IplImage * get_image(){return image;};
         private:
             xy convert_to_internal( const xy &input );
             xy current_position;

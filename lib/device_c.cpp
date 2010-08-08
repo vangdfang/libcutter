@@ -43,12 +43,12 @@ namespace Device
     static const uint8_t cmd_start[]={0x04, 0x21, 0x00, 0x00, 0x00 };
 
     C::C()
-    : m_serial()
+        : m_serial()
     {
     }
 
     C::C( const std::string filename )
-    : m_serial()
+        : m_serial()
     {
         init( filename );
     }
