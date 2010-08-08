@@ -3,6 +3,8 @@
  * David Wheeler djw3@cl.cam.ac.uk
  * Roger Needham rmn@cl.cam.ac.uk
  *
+ * www.cix.co.uk/~klockstone/xxtea.pdf
+ *
  * no longer from wikipedia
  * as this code is public domained
  * and wikipedia's isn't.
@@ -13,31 +15,31 @@
 long btea( long * v, long n , long * k )
 {
     unsigned long z;
-	unsigned long y;
-	unsigned long sum;
-	unsigned long e;
+    unsigned long y;
+    unsigned long sum;
+    unsigned long e;
 
-	//( sqrt( 5 ) - 1 ) / 2
-	const unsigned long DELTA=0x9e3779b9 ;
+    //( sqrt( 5 ) - 1 ) / 2
+    const unsigned long DELTA=0x9e3779b9 ;
 
     long m;
-	long p;
-	long q;
+    long p;
+    long q;
 
-	//Preinit check
+    //Preinit check
     if( n == 0 )
-        {
-		assert( 0 );
+    {
+        assert( 0 );
         return 1;
-        }
+    }
 
-	//Init variables
+    //Init variables
     z   = v[n-1];
-	y   = v[0];
-	sum = 0;
+    y   = v[0];
+    sum = 0;
 
-	//The core of the algorithm
-	#define MX() ( z >> 5 ^ y << 2) + ( y >> 3 ^ z << 4 )^( sum ^ y ) + ( k[ p & 3 ^ e ] ^ z )
+    //The core of the algorithm
+    #define MX() ( z >> 5 ^ y << 2) + ( y >> 3 ^ z << 4 )^( sum ^ y ) + ( k[ p & 3 ^ e ] ^ z )
 
     if ( n > 1 )
     {
@@ -48,10 +50,10 @@ long btea( long * v, long n , long * k )
             sum += DELTA ;
             e = sum >> 2&3 ;
             for ( p = 0 ; p < n-1 ; p++ )
-				{
+            {
                 y = v[p+1];
                 z = v[p] += MX();
-				}
+            }
             y = v[0];
             z = v[n-1] += MX();
         }
@@ -77,5 +79,5 @@ long btea( long * v, long n , long * k )
         }
         return 0 ;
     }
-	//This is handled above
+    //This is handled above
 }
