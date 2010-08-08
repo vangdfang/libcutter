@@ -72,7 +72,7 @@ void serial_port::p_open( const string & filename )
     {
         tcgetattr( fd, &oldtio );
         memset( &newtio, 0x00, sizeof( newtio ) );
-        newtio.c_cflag &= ~( PARENB | CSTOPB | CSIZE );
+        newtio.c_cflag &= ~( PARENB | CSIZE );
         newtio.c_cflag |= BAUD_RATE | CS8 | CLOCAL | CREAD | CSTOPB;
 
         newtio.c_iflag &= ~( IXON | IXOFF | INLCR | IGNCR | ICRNL | IUCLC | IMAXBEL | PARMRK );
@@ -126,12 +126,12 @@ void serial_port::p_close()
 
 size_t serial_port::p_write( const uint8_t * data, size_t size )
 {
-    int    i;
+    unsigned int i;
     int    count = 0;
     uint64_t t1 = getTime();
     for( i = 0; i < size; ++i )
     {
-        usleep(100);
+        usleep(1000);
 
         if( write( fd, data, 1 ) == 1 )
         {

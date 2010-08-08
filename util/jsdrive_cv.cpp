@@ -58,7 +58,7 @@ void * thread( void * ptr )
 
     c.move_to(startpt);
 
-	cvNamedWindow("cutter");
+    cvNamedWindow("cutter");
     while( running )
     {
         if( tool_down )
@@ -71,8 +71,8 @@ void * thread( void * ptr )
             cout<<"Moving  to "<<pt.x<<" "<<pt.y<<endl;
             c.move_to(pt);
         }
-	cvShowImage("cutter", c.get_image() );
-	cvWaitKey(50);//20FPS
+        cvShowImage("cutter", c.get_image() );
+        cvWaitKey(50);           //20FPS
     }
 }
 

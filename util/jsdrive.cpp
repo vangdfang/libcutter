@@ -60,6 +60,7 @@ void catch_sigint(int signal)
     should_exit = true;
 }
 
+
 void * thread( void * ptr )
 {
     run_data *status = (run_data *)ptr;
