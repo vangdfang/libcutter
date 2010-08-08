@@ -5,9 +5,7 @@
  *
  * www.cix.co.uk/~klockstone/xxtea.pdf
  *
- * no longer from wikipedia
- * as this code is public domained
- * and wikipedia's isn't.
+ * this code is in the public domain
  **************************************************/
 #include <assert.h>
 #include <stdint.h>
