@@ -179,6 +179,10 @@ int main (int argc, char **argv)
                 should_exit=true;
                 continue;
             }
+            else if ( EAGAIN == errno || EWOULDBLOCK == errno )
+            {
+                usleep(1000);
+            }
 
             old_js = js;
             switch(js.type & ~JS_EVENT_INIT)
