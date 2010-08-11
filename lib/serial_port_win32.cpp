@@ -157,7 +157,7 @@ size_t serial_port::p_read( uint8_t * data, size_t size )
 
 const uint64_t serial_port::getTime( void )
 {
-        timeval tv;
-        gettimeofday( &tv, NULL );
-        return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
+    timeval tv;
+    gettimeofday( &tv, NULL );
+    return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
 }
