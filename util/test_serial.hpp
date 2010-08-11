@@ -29,6 +29,10 @@
 #include "serial_port.hpp"
 #include <vector>
 
+#if( __WIN32 )
+#define sleep(x) Sleep(x*1000)
+#endif
+
 int main(int argc, char* argv[]);
 
 void clean_up(int signal);

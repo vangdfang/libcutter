@@ -14,6 +14,11 @@ set(cutter_files
     btea.c
 )
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    list(REMOVE_AT cutter_files list(FIND serial_port.cpp))
+    list(APPEND cutter_files serial_port_win32.cpp)
+endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+
 if(HAS_OPENCV)
     list(APPEND cutter_files device_cv_sim.cpp)
 endif(HAS_OPENCV)

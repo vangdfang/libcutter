@@ -37,7 +37,7 @@ namespace Device
         public:
             Generic();
             Generic( std::string aSerial );
-            ~Generic();
+            virtual ~Generic();
             virtual inline void init( std::string aSerial ) {};
             virtual inline const std::string device_name() { return "Virtual Device"; };
             virtual bool move_to(const xy &aPoint) = 0;

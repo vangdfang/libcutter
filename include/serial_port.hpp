@@ -26,8 +26,14 @@
 #define SERIAL_PORT_HPP
 #include <cstring>
 #include <stdint.h>
+
+#if( !__WIN32 )
 #include <termios.h>
 #include <linux/serial.h>
+#else
+/* place any win32 includes here */
+#include <windows.h>
+#endif
 
 #include <string>
 
@@ -47,14 +53,18 @@ class serial_port
         void p_close();
 
         std::size_t p_write( const uint8_t * data, std::size_t size );
-        std::size_t p_read(  const uint8_t * data, std::size_t size );
+        std::size_t p_read(  uint8_t * data, std::size_t size );
 
     protected:
+    #if( !__WIN32 )
         int  fd;
-        bool stat;
 
         termios       oldtio;
         serial_struct oldsstruct;
+    #else
+        HANDLE fd;
+        DCB olddcb;
+    #endif
 
         const uint64_t getTime();
 };

@@ -39,7 +39,13 @@ using std::endl;
 int main(int argc, char* argv[])
 {
     signal(SIGINT, clean_up);
-    ports.push_back(new serial_port("/dev/ttyUSB0"));
+
+    if( argc != 2 )
+    {
+        cout << "usage: " << argv[0] << " device" << endl;
+        return 1;
+    }
+    ports.push_back(new serial_port(argv[1]));
 
     serial_port *p = ports.front();
 

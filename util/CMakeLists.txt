@@ -7,10 +7,13 @@ include_directories(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/include
 
 find_library(HAS_OPENCV NAMES cv highgui)
 
-add_executable (jsdrive jsdrive.cpp)
-target_link_libraries (jsdrive cutter pthread)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_executable (jsdrive jsdrive.cpp)
+    target_link_libraries (jsdrive cutter pthread)
+endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+
 add_executable (test_serial test_serial.cpp)
-target_link_libraries (test_serial cutter pthread)
+target_link_libraries (test_serial cutter)
 
 if(HAS_OPENCV)
     add_executable (jsdrive_cv jsdrive_cv.cpp)

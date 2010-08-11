@@ -24,15 +24,14 @@
  */
 #include "serial_port.hpp"
 #include <cstdio>
-#include <sys/ioctl.h>
-#include <termios.h>
 #include <sys/types.h>
 #include <cstdlib>
-#include <fcntl.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <cmath>
 #include <string>
+#include <windows.h>
+
 using std::size_t;
 
 #include <iostream>
@@ -40,7 +39,7 @@ using namespace std;
 
 serial_port::serial_port()
 {
-    fd = -1;
+    fd = INVALID_HANDLE_VALUE;
 }
 
 
@@ -52,7 +51,7 @@ serial_port::~serial_port()
 
 bool serial_port::is_open()
 {
-    return fd >= 0;
+    return fd != INVALID_HANDLE_VALUE;
 }
 
 
@@ -64,61 +63,45 @@ serial_port::serial_port( const string & filename )
 
 void serial_port::p_open( const string & filename )
 {
-    termios newtio;
-    serial_struct sstruct;
+    DCB newdcb = { 0 };
+    COMMTIMEOUTS newtimeouts = { 0 };
 
-    fd = open( filename.c_str(), O_RDWR | O_NOCTTY );
-    if( fd >= 0 )
+    fd = CreateFile( filename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0 );
+    if( fd != INVALID_HANDLE_VALUE )
     {
-        tcgetattr( fd, &oldtio );
-        memset( &newtio, 0x00, sizeof( newtio ) );
-        newtio.c_cflag &= ~( PARENB | CSIZE );
-        newtio.c_cflag |= BAUD_RATE | CS8 | CLOCAL | CREAD | CSTOPB;
+        if( !GetCommState( fd, &olddcb ) )
+        {
+            // Could not save comm state
+        }
+        newdcb.DCBlength = sizeof( newdcb );
+        newdcb.BaudRate = 200000;
+        newdcb.ByteSize = 8;
+        newdcb.StopBits = ONESTOPBIT;
+        newdcb.Parity = NOPARITY;
 
-        newtio.c_iflag &= ~( IXON | IXOFF | INLCR | IGNCR | ICRNL | IUCLC | IMAXBEL | PARMRK );
-        newtio.c_iflag |= IGNPAR | IGNBRK | ISTRIP | INPCK ;
-
-        newtio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG );
-        newtio.c_oflag &= ~OPOST;
-        newtio.c_cc[VMIN]  = 5;
-        newtio.c_cc[VTIME] = 0;
-        //255;
-
-        tcflush(fd, TCIFLUSH);
-        tcsetattr(fd,TCSANOW,&newtio);
-
-        //ASYNC_SPD_MASK
-        ioctl( fd, TIOCGSERIAL, &oldsstruct );
-        sstruct = oldsstruct;
-        sstruct.custom_divisor = sstruct.baud_base / 200000;
-        sstruct.flags &= ~ASYNC_SPD_MASK;
-        sstruct.flags |= ASYNC_SPD_MASK & ASYNC_SPD_CUST;
-        printf("Divisor=%i\n", sstruct.custom_divisor );
-
-        int r = ioctl( fd, TIOCSSERIAL, &sstruct );
-        printf("r=%i\n",r);
+        if( !SetCommState( fd, &newdcb ) )
+        {
+            // Could not set comm state
+        }
+        newtimeouts.ReadIntervalTimeout = 50;
+        newtimeouts.ReadTotalTimeoutConstant = 50;
+        newtimeouts.ReadTotalTimeoutMultiplier = 10;
+        newtimeouts.WriteTotalTimeoutConstant = 50;
+        newtimeouts.WriteTotalTimeoutMultiplier = 10;
+        if( !SetCommTimeouts( fd, &newtimeouts ) )
+        {
+            // Could not set timeouts
+        }
     }
-
-    #ifdef SERIAL_PORT_DEBUG_MODE
-    #if SERIAL_PORT_DEBUG_MODE
-    char cmd[100];
-    sprintf(cmd, "stty -F %s", filename.c_str() );
-    system(cmd);
-    sprintf(cmd, "setserial -a %s", filename.c_str() );
-    system(cmd);
-    #endif
-    #endif
 }
 
 
 void serial_port::p_close()
 {
-    if( fd >= 0 )
+    if( fd != INVALID_HANDLE_VALUE )
     {
-        tcsetattr( fd, TCSANOW, &oldtio );
-        ioctl( fd, TIOCSSERIAL, &oldsstruct );
-        close( fd );
-        fd = -1;
+        CloseHandle( fd );
+        fd = INVALID_HANDLE_VALUE;
     }
     std::cout << "port closed" << std::endl;
 }
@@ -128,11 +111,18 @@ size_t serial_port::p_write( const uint8_t * data, size_t size )
 {
     size_t   i;
     int      count = 0;
+    DWORD    bytesWritten = 0;
+
+    if( fd == INVALID_HANDLE_VALUE )
+    {
+        return 0;
+    }
+
     for( i = 0; i < size; ++i )
     {
         usleep(1000);
 
-        if( write( fd, data, 1 ) == 1 )
+        if( WriteFile( fd, data, 1, &bytesWritten, NULL ) )
         {
             data++;
             count++;
@@ -149,17 +139,27 @@ size_t serial_port::p_write( const uint8_t * data, size_t size )
 
 size_t serial_port::p_read( uint8_t * data, size_t size )
 {
-    if( fd < 0 )
+    DWORD bytesRead = 0;
+
+    if( fd == INVALID_HANDLE_VALUE )
     {
         cout<<"Error reading from closed port"<<endl;
     }
-    return read( fd, (void*)data, size );
+
+    if( !ReadFile( fd, data, size, &bytesRead, NULL ) )
+    {
+        return 0;
+    }
+
+    return bytesRead;
 }
 
 
 const uint64_t serial_port::getTime( void )
 {
-    timeval tv;
-    gettimeofday( &tv, NULL );
-    return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
+    /*
+        timeval tv;
+        gettimeofday( &tv, NULL );
+        return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
+    */
 }
