@@ -10,6 +10,9 @@ find_library(HAS_OPENCV NAMES cv highgui)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable (jsdrive jsdrive.cpp)
     target_link_libraries (jsdrive cutter pthread)
+
+    add_executable (test_speed test_speed.cpp)
+    target_link_libraries (test_speed cutter)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
 add_executable (test_serial test_serial.cpp)
