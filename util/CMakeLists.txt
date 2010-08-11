@@ -11,6 +11,8 @@ add_executable (jsdrive jsdrive.cpp)
 target_link_libraries (jsdrive cutter pthread)
 add_executable (test_serial test_serial.cpp)
 target_link_libraries (test_serial cutter pthread)
+add_executable (test_speed test_speed.cpp)
+target_link_libraries (test_speed cutter pthread)
 
 if(HAS_OPENCV)
     add_executable (jsdrive_cv jsdrive_cv.cpp)
