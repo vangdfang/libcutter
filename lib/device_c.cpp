@@ -24,6 +24,8 @@
  */
 #include <string>
 #include <cstdlib>
+#include <iostream>
+#include <assert.h>
 #include "btea.h"
 #include "device_c.hpp"
 
@@ -127,7 +129,12 @@ namespace Device
         bool ret = false;
         if( m_serial.p_write( (uint8_t*)&l, sizeof( l ) ) == sizeof( l ) )
         {
-            m_serial.p_read( rbuf, sizeof(rbuf ) );
+            int num_chars = m_serial.p_read( rbuf, sizeof( rbuf ) );
+            if ( 5 != num_chars )
+            {
+                std::cout << "expected 5, got " << num_chars << std::endl;
+                assert( false );
+            }
             ret = true;
         }
         return ret;

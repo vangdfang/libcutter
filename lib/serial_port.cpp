@@ -87,6 +87,7 @@ void serial_port::p_open( const string & filename )
         tcflush(fd, TCIFLUSH);
         tcsetattr(fd,TCSANOW,&newtio);
 
+        #if( __linux )
         //ASYNC_SPD_MASK
         ioctl( fd, TIOCGSERIAL, &oldsstruct );
         sstruct = oldsstruct;
@@ -97,6 +98,13 @@ void serial_port::p_open( const string & filename )
 
         int r = ioctl( fd, TIOCSSERIAL, &sstruct );
         printf("r=%i\n",r);
+        #elif( __APPLE__ )
+        speed_t baud_rate = 200000;
+        if( ioctl( fd, IOSSIOSPEED, &baud_rate ) == -1 )
+        {
+            std::cout << "driver may not support IOSSIOSPEED" << std::endl;
+        }
+        #endif
     }
 
     #ifdef SERIAL_PORT_DEBUG_MODE
@@ -116,7 +124,9 @@ void serial_port::p_close()
     if( fd >= 0 )
     {
         tcsetattr( fd, TCSANOW, &oldtio );
+        #if( __LINUX )
         ioctl( fd, TIOCSSERIAL, &oldsstruct );
+        #endif
         close( fd );
         fd = -1;
     }

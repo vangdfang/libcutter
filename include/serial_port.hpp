@@ -29,7 +29,9 @@
 
 #if( !__WIN32 )
 #include <termios.h>
-#include <linux/serial.h>
+    #if( __linux )
+    #include <linux/serial.h>
+    #endif
 #else
 /* place any win32 includes here */
 #include <windows.h>
@@ -60,7 +62,9 @@ class serial_port
         int  fd;
 
         termios       oldtio;
+        #if( __linux )
         serial_struct oldsstruct;
+        #endif
     #else
         HANDLE fd;
         DCB olddcb;

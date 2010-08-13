@@ -83,9 +83,9 @@ void serial_port::p_open( const string & filename )
         {
             // Could not set comm state
         }
-        newtimeouts.ReadIntervalTimeout = 50;
-        newtimeouts.ReadTotalTimeoutConstant = 50;
-        newtimeouts.ReadTotalTimeoutMultiplier = 10;
+        newtimeouts.ReadIntervalTimeout = 500;
+        newtimeouts.ReadTotalTimeoutConstant = 0;
+        newtimeouts.ReadTotalTimeoutMultiplier = 0;
         newtimeouts.WriteTotalTimeoutConstant = 50;
         newtimeouts.WriteTotalTimeoutMultiplier = 10;
         if( !SetCommTimeouts( fd, &newtimeouts ) )
