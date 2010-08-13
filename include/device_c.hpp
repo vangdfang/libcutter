@@ -31,8 +31,6 @@
 #include "types.h"
 #include "serial_port.hpp"
 
-typedef uint32_t ckey_type[4];
-
 namespace Device
 {
     class C : public Device::Generic

@@ -25,9 +25,14 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdint.h>
+
 typedef struct
 {
-    long double x;
-    long double y;
+    double x;
+    double y;
 } xy;
+
+typedef uint32_t ckey_type[4];
+
 #endif

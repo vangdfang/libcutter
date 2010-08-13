@@ -5,6 +5,20 @@ cmake_minimum_required(VERSION 2.6.4)
     endif(COMMAND cmake_policy)
 include_directories(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/include/pub)
 
+find_package(SWIG)
+if(SWIG_FOUND)
+    include(${SWIG_USE_FILE})
+
+    find_package(PythonLibs)
+    if(PYTHONLIBS_FOUND)
+        include_directories(${PYTHON_INCLUDE_PATH})
+
+        set(CMAKE_SWIG_FLAGS "")
+
+        set_source_files_properties(cutter.i PROPERTIES CPLUSPLUS ON)
+    endif(PYTHONLIBS_FOUND)
+endif(SWIG_FOUND)
+
 find_library(HAS_OPENCV NAMES cv highgui)
 
 set(cutter_files
@@ -28,3 +42,10 @@ if(HAS_OPENCV)
     target_link_libraries (cutter cv highgui)
 endif(HAS_OPENCV)
 
+if(PYTHONLIBS_FOUND)
+    swig_add_module(cutter python cutter.i ${cutter_files})
+    swig_link_libraries(cutter ${PYTHON_LIBRARIES})
+    if(HAS_OPENCV)
+        swig_link_libraries(cutter cv highgui)
+    endif(HAS_OPENCV)
+endif(PYTHONLIBS_FOUND)
