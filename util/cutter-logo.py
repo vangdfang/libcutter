@@ -1,5 +1,5 @@
-# File: cricut-logo.py
-#  A simple LOGO interpreter demo that can send stuff to the cricut for drawing/cutting
+# File: cutter-logo.py
+#  A simple LOGO interpreter demo that can send stuff to libcutter for drawing/cutting
 #
 # Currently supported commands:
 # FD, BK, LT, RT, PU, PD, REPEAT, SETX, SETY, SETPOS, SETH
@@ -213,7 +213,7 @@ def eval_program(commands, simulate_on):
             print "Unrecogized command:", command
             return FALSE
 
-        #Now do a bounds check and move the cricut if we're not simulating
+        #Now do a bounds check and move the cutter if we're not simulating
         if (check_bounds() == FALSE):
             tkMessageBox.showerror("Out of bounds error", \
                                     "The turtle has left the mat, making this program un-cutable.")
@@ -221,9 +221,9 @@ def eval_program(commands, simulate_on):
             return FALSE
             
         if (move_command and not simulate_on):
-            if (cricut_cut() == FALSE):
-                tkMessageBox.showerror("Cricut Error", \
-                                    "An error occured when trying to talk to the Cricut.")
+            if (cutter_cut() == FALSE):
+                tkMessageBox.showerror("Cutter Error", \
+                                    "An error occured when trying to talk to the cutter.")
 
     return TRUE
 
@@ -238,9 +238,9 @@ def check_bounds():
 
     return TRUE
 
-def cricut_cut():
+def cutter_cut():
     global pen_down
-    print "Sending commands to Cricut..."
+    print "Sending commands to cutter..."
     turtlex = (my_turtle.xcor() + render_width/2)/50.0
     turtley = (my_turtle.ycor() + render_height/2)/50.0
 
@@ -281,7 +281,7 @@ def simulate_cut():
 
     eval_program( get_command_list( code.get( '1.0', 'end' ) ), 1 )
 
-def cut_on_cricut():
+def cut_on_cutter():
     global pen_down
     print "Cutting..."
     #reinit everything
@@ -302,7 +302,7 @@ def cut_on_cricut():
 
 # main window
 root = Tk()
-root.title("Cricut Logo Interpreter")
+root.title("libcutter Logo Interpreter")
 
 #buttons
 f = Frame(root, pady=5)
@@ -317,11 +317,11 @@ save_button.pack(side=LEFT, expand=1, padx=5)
 simulate_button = Button(f, text="Simulate", command=simulate_cut, width=20)
 simulate_button.pack(side=LEFT, expand=1, padx=5)
 
-cut_button = Button(f, text="Cut!", command=cut_on_cricut, width=20)
+cut_button = Button(f, text="Cut!", command=cut_on_cutter, width=20)
 cut_button.pack(side=LEFT, expand=1, padx=5)
 
 #label above board
-w = Label(root, text="Cricut Mat Preview")
+w = Label(root, text="Cutter Mat Preview")
 w.pack(side=TOP)
 
 #canvas that shows mat
