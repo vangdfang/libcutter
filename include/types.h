@@ -34,5 +34,4 @@ typedef struct
 } xy;
 
 typedef uint32_t ckey_type[4];
-
 #endif

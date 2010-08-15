@@ -33,6 +33,10 @@
 #include <unistd.h>
 #include <cmath>
 #include <string>
+#if( __APPLE__ )
+#include <IOKit/serial/ioss.h>
+#endif
+
 using std::size_t;
 
 #include <iostream>
@@ -65,7 +69,6 @@ serial_port::serial_port( const string & filename )
 void serial_port::p_open( const string & filename )
 {
     termios newtio;
-    serial_struct sstruct;
 
     fd = open( filename.c_str(), O_RDWR | O_NOCTTY );
     if( fd >= 0 )
@@ -75,7 +78,7 @@ void serial_port::p_open( const string & filename )
         newtio.c_cflag &= ~( PARENB | CSIZE );
         newtio.c_cflag |= BAUD_RATE | CS8 | CLOCAL | CREAD | CSTOPB;
 
-        newtio.c_iflag &= ~( IXON | IXOFF | INLCR | IGNCR | ICRNL | IUCLC | IMAXBEL | PARMRK );
+        newtio.c_iflag &= ~( IXON | IXOFF | INLCR | IGNCR | ICRNL | IMAXBEL | PARMRK );
         newtio.c_iflag |= IGNPAR | IGNBRK | ISTRIP | INPCK ;
 
         newtio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG );
@@ -89,6 +92,7 @@ void serial_port::p_open( const string & filename )
 
         #if( __linux )
         //ASYNC_SPD_MASK
+        serial_struct sstruct;
         ioctl( fd, TIOCGSERIAL, &oldsstruct );
         sstruct = oldsstruct;
         sstruct.custom_divisor = sstruct.baud_base / 200000;
@@ -124,7 +128,7 @@ void serial_port::p_close()
     if( fd >= 0 )
     {
         tcsetattr( fd, TCSANOW, &oldtio );
-        #if( __LINUX )
+        #if( __linux )
         ioctl( fd, TIOCSSERIAL, &oldsstruct );
         #endif
         close( fd );
