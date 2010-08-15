@@ -4,7 +4,11 @@ extern "C"
     #endif
     #ifndef BTEA_H
     #define BTEA_H
-    int btea(unsigned int *v, int n, unsigned int const k[4]);
+
+    #include <stdint.h>
+
+    int btea( uint32_t *v, int32_t n, const uint32_t k[4] );
+    void swap_bytes( uint32_t *v, uint32_t n );
     #endif
     #ifdef __cplusplus
 }

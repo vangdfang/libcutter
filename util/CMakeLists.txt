@@ -12,11 +12,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries (jsdrive cutter pthread)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
-    add_executable (test_speed test_speed.cpp)
-    target_link_libraries (test_speed cutter)
+add_executable (test_speed test_speed.cpp)
+target_link_libraries (test_speed cutter)
 
 add_executable (test_serial test_serial.cpp)
 target_link_libraries (test_serial cutter)
+
+add_executable (test_btea test_btea.cpp)
+target_link_libraries (test_btea cutter)
 
 if(HAS_OPENCV)
     add_executable (jsdrive_cv jsdrive_cv.cpp)

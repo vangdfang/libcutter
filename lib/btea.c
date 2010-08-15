@@ -9,19 +9,25 @@
  **************************************************/
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
+#include "btea.h"
 
-int btea( long * v, long n , long * k )
+int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
 {
-    unsigned long z;
-    unsigned long y;
-    unsigned long sum;
-    unsigned long e;
+    uint32_t z;
+    uint32_t y;
+    uint32_t sum;
+    uint32_t e;
+    uint32_t k[4];
+    int status;
+
+    memcpy( &k, k_in, sizeof(uint32_t)*4 );
 
     //( sqrt( 5 ) - 1 ) / 2
-    const unsigned long DELTA=0x9e3779b9 ;
+    const uint32_t DELTA=0x9e3779b9 ;
 
-    long p;
-    long q;
+    int32_t p;
+    int32_t q;
 
     //Preinit check
     if( n == 0 )
@@ -29,6 +35,10 @@ int btea( long * v, long n , long * k )
         assert( 0 );
         return 1;
     }
+
+    #if( _BIG_ENDIAN )
+    swap_bytes(v, n);
+    #endif
 
     //Init variables
     z   = v[n-1];
@@ -54,7 +64,7 @@ int btea( long * v, long n , long * k )
             y = v[0];
             z = v[n-1] += MX();
         }
-        return 0;
+        status = 0;
     }
     else if ( n <-1 )
     {
@@ -74,8 +84,25 @@ int btea( long * v, long n , long * k )
             y = v[0] -= MX();
             sum -= DELTA ;
         }
-        return 0;
+        status = 0;
     }
-    //This is handled above--but make the compiler happy
-    return 1;
+
+    #if( _BIG_ENDIAN )
+    swap_bytes(v, n);
+    #endif
+
+    return status;
+}
+
+
+void swap_bytes( uint32_t *v, uint32_t n )
+{
+    uint32_t i;
+    for( i=0; i<n; i++ )
+    {
+        v[i] = ( ( v[i] << 24 ) |
+            ( ( v[i] << 8 ) & 0x00ff0000 ) |
+            ( ( v[i] >> 8 ) & 0x0000ff00 ) |
+            ( v[i] >> 24 ) );
+    }
 }
