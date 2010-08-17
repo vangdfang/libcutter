@@ -12,6 +12,10 @@
 #include <string.h>
 #include "btea.h"
 
+#if( _BIG_ENDIAN )
+static void swap_bytes( uint32_t *v, unsigned int word_count );
+#endif
+
 int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
 {
     uint32_t z;
@@ -20,6 +24,16 @@ int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
     uint32_t e;
     uint32_t k[4];
     int status;
+    unsigned int word_count;
+
+    if( n >= 0 )
+    {
+        word_count = (unsigned int)n;
+    }
+    else
+    {
+        word_count = (unsigned int)-n;
+    }
 
     memcpy( &k, k_in, sizeof(uint32_t)*4 );
 
@@ -30,19 +44,19 @@ int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
     int32_t q;
 
     //Preinit check
-    if( n == 0 )
+    if( word_count == 0 )
     {
         assert( 0 );
         return 1;
     }
 
     #if( _BIG_ENDIAN )
-    swap_bytes(v, n);
+    swap_bytes(v, word_count);
     #endif
 
     //Init variables
-    z   = v[n-1];
-    y   = v[0];
+    z   = v[ word_count - 1 ];
+    y   = v[ 0 ];
     sum = 0;
 
     //The core of the algorithm
@@ -51,36 +65,35 @@ int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
     if ( n > 1 )
     {
         /* Coding Part */
-        q = 6+52/n ;
+        q = 6 + 52 / word_count;
         while ( q-- > 0 )
         {
             sum += DELTA ;
             e = sum >> 2&3 ;
-            for ( p = 0 ; p < n-1 ; p++ )
+            for ( p = 0 ; p < word_count - 1 ; p++ )
             {
                 y = v[p+1];
                 z = v[p] += MX();
             }
             y = v[0];
-            z = v[n-1] += MX();
+            z = v[ word_count - 1 ] += MX();
         }
         status = 0;
     }
     else if ( n <-1 )
     {
         /* Decoding Part */
-        n = -n ;
-        q = 6 + 52 / n ;
+        q = 6 + 52 / word_count ;
         sum = q * DELTA ;
         while (sum != 0)
         {
             e = sum>>2 & 3 ;
-            for (p = n-1 ; p > 0 ; p-- )
+            for (p = word_count - 1 ; p > 0 ; p-- )
             {
                 z = v[p-1];
                 y = v[p] -= MX();
             }
-            z = v[n-1] ;
+            z = v[ word_count -1 ] ;
             y = v[0] -= MX();
             sum -= DELTA ;
         }
@@ -88,17 +101,19 @@ int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
     }
 
     #if( _BIG_ENDIAN )
-    swap_bytes(v, n);
+    swap_bytes(v, word_count );
     #endif
 
     return status;
 }
 
 
-void swap_bytes( uint32_t *v, uint32_t n )
+#if( _BIG_ENDIAN )
+static void swap_bytes( uint32_t *v, unsigned int word_count )
 {
-    uint32_t i;
-    for( i=0; i<n; i++ )
+    unsigned int i;
+
+    for( i = 0; i < word_count; i++ )
     {
         v[i] = ( ( v[i] << 24 ) |
             ( ( v[i] << 8 ) & 0x00ff0000 ) |
@@ -106,3 +121,4 @@ void swap_bytes( uint32_t *v, uint32_t n )
             ( v[i] >> 24 ) );
     }
 }
+#endif
