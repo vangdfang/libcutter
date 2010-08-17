@@ -15,6 +15,8 @@ endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 add_executable (test_speed test_speed.cpp)
 target_link_libraries (test_speed cutter)
 
+add_executable (test_endian test_endian.cpp)
+
 add_executable (test_serial test_serial.cpp)
 target_link_libraries (test_serial cutter)
 
