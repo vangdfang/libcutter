@@ -29,14 +29,14 @@
 #include <cstdlib>
 #include <cstring>
 #include "btea.h"
-#include "keys.h"
 
 using std::cout;
 using std::endl;
 
-static const uint32_t keys[4]={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
+static const uint32_t keys[4]          = {   12,   34,   56,  78  };
+static const uint8_t  known_result[]   = { 0xCE, 0x9D, 0x7D, 0x67, 0x30, 0x53, 0x70, 0x3F, 0x04, 0x58, 0x6A, 0xA1 };
 
-void print_hex( uint8_t * ptr, int numBytes )
+void print_hex( const uint8_t * ptr, int numBytes )
 {
     for( int i = 0; i < numBytes; ++i )
     {
@@ -73,13 +73,45 @@ int main( int numArgs, char *args[] )
     memcpy( buffer, ptr, strlen( ptr ) );
 
     cout << "Before encryption:" << endl;
-    print_hex( (uint8_t*)buffer, size );
+    print_hex( (const uint8_t*)buffer, size );
 
     btea( buffer, 3, keys);
 
     cout << endl;
     cout << "After encryption:" << endl;
-    print_hex( (uint8_t*)buffer, size );
+    cout << '\t';
+    print_hex( (const uint8_t*)buffer, size );
+
+    if( ptr != args[1] )
+    {
+        cout << "Secret default " << ptr <<" test mode enabled...(add another string as arg if you like)" << endl;
+
+        if( memcmp( known_result, buffer, sizeof( known_result ) ) == 0 )
+        {
+            cout << "\tHuzzah! You passed the default btea test" << endl;
+        }
+        else
+        {
+            cout << "\tCrapCrap! You failed the default btea test" << endl;
+            cout << "\t";
+            print_hex( known_result, sizeof( known_result ) );
+            cout << "\t... should've been the result" << endl;
+            cout << "\tTry running test_endian to find out why"    << endl;
+        }
+
+        btea( buffer, -3, keys );
+        cout << "After decrypting, result was:";
+        print_hex( (const uint8_t*)buffer, size );
+
+        if( memcmp( buffer, ptr, size ) == 0 )
+        {
+            cout << "Hurray, you passed the btea encryption identity test" << endl;
+        }
+        else
+        {
+            cout << "You failed the btea encryption identity test" << endl;
+        }
+    }
 
     free( buffer );
 }
