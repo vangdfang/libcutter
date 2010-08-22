@@ -242,7 +242,7 @@ def cutter_cut():
     global pen_down
     print "Sending commands to cutter..."
     turtlex = (my_turtle.xcor() + render_width/2)/50.0
-    turtley = (my_turtle.ycor() + render_height/2)/50.0
+    turtley = (-my_turtle.ycor() + render_height/2)/50.0
 
     if (turtlex > 12 or turtley > 6):
         print "x: ",  turtley
