@@ -65,13 +65,6 @@ void * thread( void * ptr )
     while( running )
     {
         IplImage * image = c.get_image();
-        cvShowImage("cutter", image );
-        if( cvWaitKey(10) == ' ' )
-        {
-            //restart to write an image
-            c.stop();
-            c.start();
-        }
 
         if( tool_down )
         {
@@ -83,8 +76,14 @@ void * thread( void * ptr )
             cout<<"Moving  to "<<pt.x<<" "<<pt.y<<endl;
             c.move_to(pt);
         }
-        cvShowImage("cutter", c.get_image() );
-        cvWaitKey(10);
+
+        cvShowImage("cutter", image );
+        if( cvWaitKey(10) == ' ' )
+        {
+            //restart to write an image
+            c.stop();
+            c.start();
+        }
 
         cvReleaseImage( &image );
     }
