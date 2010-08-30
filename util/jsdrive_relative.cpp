@@ -207,10 +207,10 @@ int main (int argc, char **argv)
             status.pt.x += (float)((int)-axis[0]) * 1.0 / 65535 / 100;
             status.pt.y += (float)((int) axis[1]) * 1.0 / 65535 / 100;
 
-			if( status.pt.x > 5.5  ) status.pt.x = 5.5;
-			if( status.pt.y > 11.5 ) status.pt.y = 11.5;
-			if( status.pt.x < .5   ) status.pt.x = .5;
-			if( status.pt.y < .5   ) status.pt.y = .5;
+            if( status.pt.x > 5.5  ) status.pt.x = 5.5;
+            if( status.pt.y > 11.5 ) status.pt.y = 11.5;
+            if( status.pt.x < .5   ) status.pt.x = .5;
+            if( status.pt.y < .5   ) status.pt.y = .5;
 
             cout<<"moving to:"<<status.pt.x<<' '<<status.pt.y<<endl;
             pthread_mutex_unlock( &status.mutex );
