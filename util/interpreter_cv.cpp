@@ -5,7 +5,6 @@
 #include <opencv/highgui.h>
 using namespace std;
 
-#include "device_c.hpp"
 #include "device_cv_sim.hpp"
 
 int main( int numArgs, char * args[] )
