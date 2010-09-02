@@ -28,11 +28,11 @@
 
 #include <opencv/highgui.h>
 
-#define DPI_X 100
-#define DPI_Y 100
+#define DPI_X 3
+#define DPI_Y 3
 
-#define DEFAULT_SIZE_X 8
-#define DEFAULT_SIZE_Y 6
+#define DEFAULT_SIZE_X 350
+#define DEFAULT_SIZE_Y 350
 
 namespace Device
 {
@@ -167,13 +167,24 @@ namespace Device
                 250, 250, 250
             }
         };
-        cvLine( new_image,
+        cvCircle( new_image,
             cvPoint( current_position.x, current_position.y ),
-            cvPoint( current_position.x, current_position.y ),
+            10,
             rgb,
-            25,
-            CV_AA,
-            0);
+            2);
+
+        cvLine( new_image,
+            cvPoint( current_position.x + 5, current_position.y + 5 ),
+            cvPoint( current_position.x - 5, current_position.y - 5 ),
+            rgb,
+            1);
+
+        cvLine( new_image,
+            cvPoint( current_position.x + 5, current_position.y - 5 ),
+            cvPoint( current_position.x - 5, current_position.y + 5 ),
+            rgb,
+            1);
+
         return new_image;
     }
 
