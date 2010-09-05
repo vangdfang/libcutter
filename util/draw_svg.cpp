@@ -10,34 +10,46 @@ using namespace std;
 
 class svg_render_state_t
 {
-public:
-    svg_render_state_t( Device::Generic & tempdev ) : device(tempdev)
-    {
-        set_transform(1,0,0,0,1,0);
-    }
+    public:
+        svg_render_state_t( Device::Generic & tempdev ) : device( tempdev )
+        {
+            set_transform(1,0,0,0,1,0);
+        }
 
-    bool move_to( const xy & pt );
-    bool cut_to(  const xy & pt );
-    bool curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd );
+        bool move_to( const xy & pt );
+        bool cut_to(  const xy & pt );
+        bool curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd );
 
-    void set_transform( double a, double b, double c, double d, double e, double f );
+        void set_transform( double a, double b, double c, double d, double e, double f );
 
-    xy get_last_moved_to( void ){ return last_moved_to; }
-private:
-    double transform[3][3];
-    xy last_moved_to;
-    Device::Generic & device;
-    xy apply_transform( const xy & pt );
+        xy get_last_moved_to( void ){ return last_moved_to; }
+    private:
+        double transform[3][3];
+        xy last_moved_to;
+        Device::Generic & device;
+        xy apply_transform( const xy & pt );
 };
+
+bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd )
+{
+    xy bufa = apply_transform( pta );
+    xy bufb = apply_transform( ptb );
+    xy bufc = apply_transform( ptc );
+    xy bufd = apply_transform( ptd );
+    cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<'.'<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
+    return device.curve_to( bufa, bufb, bufc, bufd );
+}
+
 
 bool svg_render_state_t::move_to( const xy & pt )
 {
-xy buf;
-last_moved_to = pt;
-buf = apply_transform(pt);
-cout<<"    transform mov to:"<<buf.x<<','<<buf.y<<endl;
-return device.move_to( buf );
+    xy buf;
+    last_moved_to = pt;
+    buf = apply_transform(pt);
+    cout<<"    transform mov to:"<<buf.x<<','<<buf.y<<endl;
+    return device.move_to( buf );
 }
+
 
 /*
 svg_render_state_t::svg_render_state_t( Device::Generic & tempdev )
@@ -51,76 +63,79 @@ device = tempdev;
 
 void svg_render_state_t::set_transform( double a, double b, double c, double d, double e, double f )
 {
-transform[0][0] = a;
-transform[0][1] = c;
-transform[0][2] = e;
-transform[1][0] = b;
-transform[1][1] = d;
-transform[1][2] = f;
-transform[2][0] = 0;
-transform[2][1] = 0;
-transform[2][2] = 1;
+    transform[0][0] = a;
+    transform[0][1] = c;
+    transform[0][2] = e;
+    transform[1][0] = b;
+    transform[1][1] = d;
+    transform[1][2] = f;
+    transform[2][0] = 0;
+    transform[2][1] = 0;
+    transform[2][2] = 1;
 }
+
 
 xy svg_render_state_t::apply_transform( const xy & pt )
 {
-xy buf;
-double scalar;
+    xy buf;
+    double scalar;
 
-buf.x  = transform[0][0] * pt.x + transform[0][1] * pt.y + transform[0][2] * 1.0;
-buf.y  = transform[1][0] * pt.x + transform[1][1] * pt.y + transform[1][2] * 1.0;
-scalar = transform[2][0] * pt.x + transform[2][1] * pt.y + transform[2][2] * 1.0;
+    buf.x  = transform[0][0] * pt.x + transform[0][1] * pt.y + transform[0][2] * 1.0;
+    buf.y  = transform[1][0] * pt.x + transform[1][1] * pt.y + transform[1][2] * 1.0;
+    scalar = transform[2][0] * pt.x + transform[2][1] * pt.y + transform[2][2] * 1.0;
 
-if( scalar == 0 )
+    if( scalar == 0 )
     {
-    buf.x = 0;
-    buf.y = 0;
+        buf.x = 0;
+        buf.y = 0;
     }
-else
+    else
     {
-    buf.x /= scalar;
-    buf.y /= scalar;
+        buf.x /= scalar;
+        buf.y /= scalar;
     }
 
-buf.x /= 100;
-buf.y /= 100;
+    buf.x /= 100;
+    buf.y /= 100;
 
-return buf;
+    return buf;
 }
+
 
 bool svg_render_state_t::cut_to( const xy & pt )
 {
-xy buf;
+    xy buf;
 
-buf = apply_transform( pt );
-cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
-return device.cut_to( buf );
+    buf = apply_transform( pt );
+    cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
+    return device.cut_to( buf );
 }
+
 
 static svg_status_t begin_group_callback( void * closure, double opacity )
 {
-//    cout<<"Begin group called with opacity="<<opacity<<endl;
+    //    cout<<"Begin group called with opacity="<<opacity<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t end_group_callback( void * closure, double opacity )
 {
-//    cout<<"End group called with opacity="<<opacity<<endl;
+    //    cout<<"End group called with opacity="<<opacity<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t begin_element_callback( void * ptr )
 {
-//    cout<<"Begin element callback called"<<endl;
+    //    cout<<"Begin element callback called"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t end_element_callback( void * ptr )
 {
-//    cout<<"End element callback called"<<endl;
+    //    cout<<"End element callback called"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
@@ -184,35 +199,35 @@ static svg_status_t close_path_callback( void * ptr )
 
 static svg_status_t set_color_callback( void * ptr, const svg_color_t * color )
 {
-//    cout<<"Setting color"<<endl;
+    //    cout<<"Setting color"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_width_callback( void * ptr, svg_length_t * width )
 {
-//    cout << "Setting stroke width " << endl;
+    //    cout << "Setting stroke width " << endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_fill_opacity_callback( void * ptr, double fill_opacity )
 {
-//    cout <<"Should be setting fill opacity="<<fill_opacity<<endl;
+    //    cout <<"Should be setting fill opacity="<<fill_opacity<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_fill_paint_callback( void * ptr, const svg_paint_t * paint )
 {
-//    cout << "Ignoring fill paint"<<endl;
+    //    cout << "Ignoring fill paint"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_fill_rule_callback( void * ptr, const svg_fill_rule_t fill_rule )
 {
-//    cout << "Ignoring fill rule"<<endl;
+    //    cout << "Ignoring fill rule"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
@@ -247,91 +262,91 @@ static svg_status_t transform_callback( void * ptr, double a, double b, double c
 
 static svg_status_t set_opacity_callback( void * ptr, double opacity )
 {
-//    cout <<"Setting opacity:"<<opacity<<endl;
+    //    cout <<"Setting opacity:"<<opacity<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_font_family_callback( void * ptr, const char * family )
 {
-//    cout <<"set font to:"<<family<<endl;
+    //    cout <<"set font to:"<<family<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_font_size_callback( void * ptr, double sz )
 {
-//    cout<<"Set font size:"<<sz<<endl;
+    //    cout<<"Set font size:"<<sz<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_font_style_callback( void * ptr, svg_font_style_t font_style )
 {
-//    cout<<"Set font style"<<endl;
+    //    cout<<"Set font style"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_font_weight_callback( void * ptr, unsigned int font_weight )
 {
-//    cout <<"Set font weight:"<<font_weight<<endl;
+    //    cout <<"Set font weight:"<<font_weight<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_dash_array_callback( void * ptr, double * dash_array, int num_dashes )
 {
-//    cout<<"Setting dash array to "<<num_dashes<<" dashes"<<endl;
+    //    cout<<"Setting dash array to "<<num_dashes<<" dashes"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_dash_offset_callback( void * ptr, svg_length_t * offset )
 {
-//    cout <<"Setting dash offset"<<endl;
+    //    cout <<"Setting dash offset"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_line_cap_callback( void * ptr, svg_stroke_line_cap_t line_cap )
 {
-//    cout <<"Setting stroke line cap"<<endl;
+    //    cout <<"Setting stroke line cap"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_line_join_callback( void * ptr, svg_stroke_line_join_t line_join )
 {
-//    cout << "Setting stroke line join"<<endl;
+    //    cout << "Setting stroke line join"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_miter_limit_callback( void * ptr, double limit )
 {
-//    cout <<"Setting stroke mitre limit to "<<limit<<endl;
+    //    cout <<"Setting stroke mitre limit to "<<limit<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_opacity_callback( void * ptr, double stroke_opacity )
 {
-//    cout <<"Setting stroke opacity to "<<stroke_opacity<<endl;
+    //    cout <<"Setting stroke opacity to "<<stroke_opacity<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_stroke_paint_callback( void * ptr, const svg_paint_t * paint )
 {
-//    cout <<"Setting stroke paint"<<endl;
+    //    cout <<"Setting stroke paint"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t set_text_anchor_callback( void * ptr, svg_text_anchor_t text_anchor )
 {
-//    cout <<"Setting text anchor"<<endl;
+    //    cout <<"Setting text anchor"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
@@ -352,12 +367,121 @@ static svg_status_t render_path_callback( void * ptr )
 
 static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_length_t * cy, svg_length_t * rx, svg_length_t * ry )
 {
-//    static const double kappa = 4 * ( sqrt( 2 ) - 1 ) / 3;
+    //Draw an ellipse out of 8 beziers.
+    xy control_pts[16];
+
     cout <<"Rendering ellipse"<<endl;
-	cout <<"    cx=" << cx->value<<endl;
-	cout <<"    cy=" << cy->value<<endl;
-	cout <<"    rx=" << rx->value<<endl;
-	cout <<"    ry=" << ry->value<<endl;
+    cout <<"    cx=" << cx->value<<endl;
+    cout <<"    cy=" << cy->value<<endl;
+    cout <<"    rx=" << rx->value<<endl;
+    cout <<"    ry=" << ry->value<<endl;
+
+    for( int i = 0; i < 16; ++i )
+    {
+        control_pts[i].x = cx->value;
+        control_pts[i].y = cy->value;
+    }
+
+    //Right
+    control_pts[ 0].x += rx->value;
+    control_pts[ 0].y += 0.0;
+
+    control_pts[ 1].x += rx->value;
+    control_pts[ 1].y += ( sqrt( 2 ) - 1 ) * ry->value;
+
+    control_pts[ 2].x += sqrt( 2 ) * ( rx->value ) / 2;
+    control_pts[ 2].y += sqrt( 2 ) * ( ry->value ) / 2;
+
+    control_pts[ 3].x += ( sqrt( 2 ) - 1 ) * rx->value;
+    control_pts[ 3].y += ry->value;
+
+    //Top
+    control_pts[ 4].x -= 0.0;
+    control_pts[ 4].y += ry->value;
+
+    control_pts[ 5].x -= ( sqrt( 2 ) - 1 ) * rx->value;
+    control_pts[ 5].y += ry->value;
+
+    control_pts[ 6].x -= sqrt( 2 ) * rx->value / 2;
+    control_pts[ 6].y += sqrt( 2 ) * ry->value / 2;
+
+    control_pts[ 7].x -= rx->value;
+    control_pts[ 7].y += ( sqrt( 2 ) - 1 ) * ry->value;
+
+    //Left
+    control_pts[ 8].x -= rx->value;
+    control_pts[ 8].y -= 0.0;
+
+    control_pts[ 9].x -= rx->value;
+    control_pts[ 9].y -= ( sqrt( 2 ) - 1 ) * ry->value;
+
+    control_pts[10].x -= sqrt( 2 ) * rx->value / 2;
+    control_pts[10].y -= sqrt( 2 ) * ry->value / 2;
+
+    control_pts[11].x -= ( sqrt( 2 ) - 1 ) * rx->value;
+    control_pts[11].y -= ry->value;
+
+    //Bottom
+    control_pts[12].x += 0.0;
+    control_pts[12].y -= ry->value;
+
+    control_pts[13].x += ( sqrt( 2 ) - 1 ) * rx->value;
+    control_pts[13].y -= ry->value;
+
+    control_pts[14].x += sqrt( 2 ) * rx->value / 2;
+    control_pts[14].y -= sqrt( 2 ) * ry->value / 2;
+
+    control_pts[15].x += rx->value;
+    control_pts[15].y -= ( sqrt( 2 ) - 1 ) * ry->value;
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 0],
+        control_pts[ 1],
+        control_pts[ 1],
+        control_pts[ 2]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 2],
+        control_pts[ 3],
+        control_pts[ 3],
+        control_pts[ 4]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 4],
+        control_pts[ 5],
+        control_pts[ 5],
+        control_pts[ 6]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 6],
+        control_pts[ 7],
+        control_pts[ 7],
+        control_pts[ 8]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 8],
+        control_pts[ 9],
+        control_pts[ 9],
+        control_pts[10]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[10],
+        control_pts[11],
+        control_pts[11],
+        control_pts[12]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[12],
+        control_pts[13],
+        control_pts[13],
+        control_pts[14]);
+
+    ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[14],
+        control_pts[15],
+        control_pts[15],
+        control_pts[ 0]);
+
     return SVG_STATUS_SUCCESS;
 }
 
@@ -367,22 +491,21 @@ static svg_status_t render_rect_callback( void * ptr, svg_length_t * x, svg_leng
     xy point;
 
     cout <<"Rendering rect"<<endl;
-	cout <<"         x=" << x->value<<endl;
-	cout <<"         y=" << y->value<<endl;
-	cout <<"        rx=" << rx->value<<endl;
-	cout <<"        ry=" << ry->value<<endl;
-	cout <<"     width=" << width->value<<endl;
-	cout <<"    height=" << height->value<<endl;
+    cout <<"         x=" << x->value<<endl;
+    cout <<"         y=" << y->value<<endl;
+    cout <<"        rx=" << rx->value<<endl;
+    cout <<"        ry=" << ry->value<<endl;
+    cout <<"     width=" << width->value<<endl;
+    cout <<"    height=" << height->value<<endl;
 
-//    point.x = x->value + ((svg_render_state_t*)ptr)->get_last_moved_to().x;
-//    point.y = y->value + ((svg_render_state_t*)ptr)->get_last_moved_to().y;
-//    point.x = ((svg_render_state_t*)ptr)->get_last_moved_to().x;
-//    point.y = ((svg_render_state_t*)ptr)->get_last_moved_to().y;
+    //    point.x = x->value + ((svg_render_state_t*)ptr)->get_last_moved_to().x;
+    //    point.y = y->value + ((svg_render_state_t*)ptr)->get_last_moved_to().y;
+    //    point.x = ((svg_render_state_t*)ptr)->get_last_moved_to().x;
+    //    point.y = ((svg_render_state_t*)ptr)->get_last_moved_to().y;
 
     point.x = x->value;
     point.y = y->value;
     ((svg_render_state_t*)ptr)->move_to( point );
-
 
     point.x += width->value;
     ((svg_render_state_t*)ptr)->cut_to( point );
