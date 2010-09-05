@@ -28,11 +28,11 @@
 
 #include <opencv/highgui.h>
 
-#define DPI_X 3
-#define DPI_Y 3
+#define DPI_X 100
+#define DPI_Y 100
 
-#define DEFAULT_SIZE_X 350
-#define DEFAULT_SIZE_Y 350
+#define DEFAULT_SIZE_X 6
+#define DEFAULT_SIZE_Y 6
 
 namespace Device
 {
