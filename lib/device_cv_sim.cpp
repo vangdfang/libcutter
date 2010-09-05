@@ -101,7 +101,14 @@ namespace Device
         {
             return false;
         }
-        return false;
+
+        move_to( p0 );
+        cut_to( p1 );
+        move_to( p0 );
+        cut_to( p3 );
+        cut_to( p2 );
+        move_to( p3 );
+        return true;
     }
 
     bool CV_sim::start()
