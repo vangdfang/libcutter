@@ -23,6 +23,9 @@ add_executable (test_endian test_endian.cpp)
 add_executable (test_serial test_serial.cpp)
 target_link_libraries (test_serial cutter)
 
+add_executable (draw_svg draw_svg.cpp)
+target_link_libraries (draw_svg png cutter jpeg svg)
+
 add_executable (test_btea test_btea.cpp)
 target_link_libraries (test_btea cutter)
 
