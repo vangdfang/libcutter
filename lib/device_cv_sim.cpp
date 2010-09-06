@@ -97,18 +97,51 @@ namespace Device
 
     bool CV_sim::curve_to(const xy & p0, const xy & p1, const xy & p2, const xy & p3 )
     {
+        #define A 0
+        #define B 1
+        #define C 2
+        #define NUM_FACT 3
+        #define X 0
+        #define Y 1
+        #define NUM_DIM 2
+
+        #define NUM_SECTIONS_PER_CURVE 20
+
+        double coeff[ NUM_FACT ][ NUM_DIM ];
+        xy iter;
+        double t;
+
         if( !running )
         {
             return false;
         }
 
+        coeff[C][X] = 3 * ( p1.x - p0.x );
+        coeff[B][X] = 3 * ( p2.x - p1.x ) - coeff[C][X];
+        coeff[A][X] = ( p3.x - p0.x ) - coeff[C][X] - coeff[B][X];
+
+        coeff[C][Y] = 3 * ( p1.y - p0.y );
+        coeff[B][Y] = 3 * ( p2.y - p1.y ) - coeff[C][Y];
+        coeff[A][Y] = ( p3.y - p0.y ) - coeff[C][Y] - coeff[B][Y];
+
         move_to( p0 );
-        cut_to( p1 );
-        move_to( p0 );
-        cut_to( p3 );
-        cut_to( p2 );
-        move_to( p3 );
+        for( int i = 1; i <= NUM_SECTIONS_PER_CURVE; ++i )
+        {
+            t = (double)i / (double)NUM_SECTIONS_PER_CURVE;
+            iter.x = coeff[A][X] * t * t * t + coeff[B][X] * t * t + coeff[C][X] * t + p0.x;
+            iter.y = coeff[A][Y] * t * t * t + coeff[B][Y] * t * t + coeff[C][Y] * t + p0.y;
+            cut_to( iter );
+        }
+
         return true;
+        #undef A
+        #undef B
+        #undef C
+        #undef X
+        #undef Y
+        #undef NUM_FACT
+        #undef NUM_DUM
+        #undef NUM_SECTIONS_PER_CURVE
     }
 
     bool CV_sim::start()
