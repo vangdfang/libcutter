@@ -78,6 +78,7 @@ void svg_render_state_t::path_arc_segment( const xy & center, double th0, double
     curve_to( cur_posn, pt1, pt2, pt3 );
 }
 
+
 bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd )
 {
     xy bufa = apply_transform( pta );
@@ -278,7 +279,6 @@ static svg_status_t arc_callback( void * ptr, double rx, double ry, double x_axi
     cout<<"    with large_arc_flag="<<large_arc_flag<<endl;
     cout<<"    with     sweep_flag="<<    sweep_flag<<endl;
 
-
     rx = fabs (rx);
     ry = fabs (ry);
 
@@ -343,14 +343,13 @@ static svg_status_t arc_callback( void * ptr, double rx, double ry, double x_axi
        n_segs. Plus the "+ 0.001" looks just plain fishy. -cworth */
     n_segs = ceil (fabs (th_arc / (M_PI * 0.5 + 0.001)));
 
-    for (i = 0; i < n_segs; i++) {
+    for (i = 0; i < n_segs; i++)
+    {
         ((svg_render_state_t*)ptr)->path_arc_segment ( center,
-                                        th0 + i * th_arc / n_segs,
-                                        th0 + (i + 1) * th_arc / n_segs,
-                                        rx, ry, x_axis_rotation);
+            th0 + i * th_arc / n_segs,
+            th0 + (i + 1) * th_arc / n_segs,
+            rx, ry, x_axis_rotation);
     }
-
-
 
     return SVG_STATUS_SUCCESS;
 }
