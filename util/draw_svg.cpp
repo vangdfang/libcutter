@@ -262,7 +262,14 @@ static svg_status_t quadratic_curve_callback( void * ptr, double x1, double y1, 
  * y: New y coordinate.
  *
  **/
-static svg_status_t arc_callback( void * ptr, double rx, double ry, double x_axis_rotation, int large_arc_flag, int sweep_flag, double x, double y )
+static svg_status_t arc_callback( void * ptr,
+double rx,
+double ry,
+double x_axis_rotation,
+int large_arc_flag,
+int sweep_flag,
+double x,
+double y )
 {
     xy cur_posn;
     xy center;
@@ -619,39 +626,90 @@ static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_
 }
 
 
-static svg_status_t render_rect_callback( void * ptr, svg_length_t * x, svg_length_t *y, svg_length_t*width, svg_length_t * height, svg_length_t * rx, svg_length_t * ry )
+static svg_status_t render_rect_callback( void * ptr,
+svg_length_t * x_len,
+svg_length_t * y_len,
+svg_length_t * width_len,
+svg_length_t * height_len,
+svg_length_t * rx_len,
+svg_length_t * ry_len )
 {
     xy point;
+    double x      = x_len->value;
+    double y      = y_len->value;
+    double rx     = rx_len->value;
+    double ry     = ry_len->value;
+    double width  = width_len->value;
+    double height = height_len->value;
+
+    if( rx > width / 2 )
+    {
+        rx = width / 2;
+    }
+
+    if( ry > height / 2 )
+    {
+        ry = height / 2;
+    }
 
     cout <<"Rendering rect"<<endl;
-    cout <<"         x=" << x->value<<endl;
-    cout <<"         y=" << y->value<<endl;
-    cout <<"        rx=" << rx->value<<endl;
-    cout <<"        ry=" << ry->value<<endl;
-    cout <<"     width=" << width->value<<endl;
-    cout <<"    height=" << height->value<<endl;
+    cout <<"         x=" << x<<endl;
+    cout <<"         y=" << y<<endl;
+    cout <<"        rx=" << rx<<endl;
+    cout <<"        ry=" << ry<<endl;
+    cout <<"     width=" << width<<endl;
+    cout <<"    height=" << height<<endl;
 
     //    point.x = x->value + ((svg_render_state_t*)ptr)->get_last_moved_to().x;
     //    point.y = y->value + ((svg_render_state_t*)ptr)->get_last_moved_to().y;
     //    point.x = ((svg_render_state_t*)ptr)->get_last_moved_to().x;
     //    point.y = ((svg_render_state_t*)ptr)->get_last_moved_to().y;
 
-    point.x = x->value;
-    point.y = y->value;
-    ((svg_render_state_t*)ptr)->move_to( point );
+    if( rx > 0 || ry > 0 )
+    {
+        point.x = x + rx;
+        point.y = y;
+        ((svg_render_state_t*)ptr)->move_to( point );
 
-    point.x += width->value;
-    ((svg_render_state_t*)ptr)->cut_to( point );
+        point.x = x + width - rx;
+        ((svg_render_state_t*)ptr)->cut_to( point );
 
-    point.y += height->value;
-    ((svg_render_state_t*)ptr)->cut_to( point );
+        arc_callback( ptr, rx, ry, 0, 0, 1, x + width, y + ry );
 
-    point.x -= width->value;
-    ((svg_render_state_t*)ptr)->cut_to( point );
+        point.x = x + width;
+        point.y = y + height - ry;
+        ((svg_render_state_t*)ptr)->cut_to( point );
 
-    point.y -= height->value;
-    ((svg_render_state_t*)ptr)->cut_to( point );
+        arc_callback( ptr, rx, ry, 0, 0, 1, x + width - rx, y + height );
 
+        point.x = x + rx;
+        point.y = y + height;
+        ((svg_render_state_t*)ptr)->cut_to( point );
+
+        arc_callback( ptr, rx, ry, 0, 0, 1, x, y + height - ry );
+
+        point.x = x;
+        point.y = y + ry;
+        ((svg_render_state_t*)ptr)->cut_to( point );
+
+        arc_callback( ptr, rx, ry, 0, 0, 1, x + rx, y );
+    }
+    else
+    {
+        point.x = x;
+        point.y = y;
+        ((svg_render_state_t*)ptr)->move_to( point );
+
+        point.x += width;
+        ((svg_render_state_t*)ptr)->cut_to( point );
+
+        point.y += height;
+        ((svg_render_state_t*)ptr)->cut_to( point );
+
+        point.x -= width;
+        ((svg_render_state_t*)ptr)->cut_to( point );
+    }
+    close_path_callback( ptr );
     return SVG_STATUS_SUCCESS;
 }
 
