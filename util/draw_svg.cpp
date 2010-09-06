@@ -24,6 +24,7 @@ class svg_render_state_t
 
         xy get_cur_posn( void ){ return cur_posn; }
         xy get_last_moved_to( void ){ return last_moved_to; }
+        void path_arc_segment( const xy & center, double th0, double th1, double rx, double ry, double x_axis_rotation );
     private:
         double transform[3][3];
         xy last_moved_to;
@@ -32,13 +33,58 @@ class svg_render_state_t
         xy apply_transform( const xy & pt );
 };
 
+/*--------------------------------------------------
+   The arc functions below are:
+   Copyright (C) 2000 Eazel, Inc.
+   Original Author: Raph Levien <raph@artofcode.com>
+   This is adapted from libsvg-cairo under the
+   LGPL 2.
+--------------------------------------------------*/
+void svg_render_state_t::path_arc_segment( const xy & center, double th0, double th1, double rx, double ry, double x_axis_rotation )
+{
+    double sin_th, cos_th;
+    double a00, a01, a10, a11;
+    xy pt1, pt2, pt3;
+    double t;
+    double th_half;
+    sin_th = sin (x_axis_rotation * (M_PI / 180.0));
+    cos_th = cos (x_axis_rotation * (M_PI / 180.0));
+
+    cout<<"    path arc segment at "<<center.x<<','<<center.y<<" th0="<<th0<<" th1="<<th1<<endl;
+    cout<<"        rx="<<rx<<" ry="<<ry<<" rot="<<x_axis_rotation<<endl;
+
+    /* inverse transform compared with rsvg_path_arc */
+    a00 = cos_th * rx;
+    a01 = -sin_th * ry;
+    a10 = sin_th * rx;
+    a11 = cos_th * ry;
+
+    th_half = 0.5 * (th1 - th0);
+    t = (8.0 / 3.0) * sin (th_half * 0.5) * sin (th_half * 0.5) / sin (th_half);
+    pt1.x = center.x + cos (th0) - t * sin (th0);
+    pt1.y = center.y + sin (th0) + t * cos (th0);
+    pt3.x = center.x + cos (th1);
+    pt3.y = center.y + sin (th1);
+    pt2.x = pt3.x + t * sin (th1);
+    pt2.y = pt3.y - t * cos (th1);
+
+    pt1.x = pt1.x * a00 + a01 * pt1.y;
+    pt1.y = pt1.x * a10 + a11 * pt1.y;
+    pt2.x = pt2.x * a00 + a01 * pt2.y;
+    pt2.y = pt2.x * a10 + a11 * pt2.y;
+    pt3.x = pt3.x * a00 + a01 * pt3.y;
+    pt3.y = pt3.x * a10 + a11 * pt3.y;
+
+    curve_to( cur_posn, pt1, pt2, pt3 );
+}
+
 bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd )
 {
     xy bufa = apply_transform( pta );
     xy bufb = apply_transform( ptb );
     xy bufc = apply_transform( ptc );
     xy bufd = apply_transform( ptd );
-    cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<'.'<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
+    cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<','<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
     cur_posn = ptd;
     return device.curve_to( bufa, bufb, bufc, bufd );
 }
@@ -203,9 +249,109 @@ static svg_status_t quadratic_curve_callback( void * ptr, double x1, double y1, 
 }
 
 
+/**
+ * _svg_cairo_path_arc_to: Add an arc to the given path
+ *
+ * rx: Radius in x direction (before rotation).
+ * ry: Radius in y direction (before rotation).
+ * x_axis_rotation: Rotation angle for axes.
+ * large_arc_flag: 0 for arc length <= 180, 1 for arc >= 180.
+ * sweep: 0 for "negative angle", 1 for "positive angle".
+ * x: New x coordinate.
+ * y: New y coordinate.
+ *
+ **/
 static svg_status_t arc_callback( void * ptr, double rx, double ry, double x_axis_rotation, int large_arc_flag, int sweep_flag, double x, double y )
 {
+    xy cur_posn;
+    xy center;
+    xy pt0;
+    xy pt1;
+    double sin_th, cos_th;
+    double a00, a01, a10, a11;
+    double d, sfactor, sfactor_sq;
+    double th0, th1, th_arc;
+    int i, n_segs;
+    double dx, dy, dx1, dy1, Pr1, Pr2, Px, Py, check;
+
     cout<<"Doing an arc at"<<x<<','<<y<<" with rx="<<rx<<" and ry="<<ry<<endl;
+    cout<<"    with large_arc_flag="<<large_arc_flag<<endl;
+    cout<<"    with     sweep_flag="<<    sweep_flag<<endl;
+
+
+    rx = fabs (rx);
+    ry = fabs (ry);
+
+    cur_posn = ((svg_render_state_t*)ptr)->get_cur_posn();
+
+    sin_th = sin (x_axis_rotation * (M_PI / 180.0));
+    cos_th = cos (x_axis_rotation * (M_PI / 180.0));
+
+    dx = (cur_posn.x - x) / 2.0;
+    dy = (cur_posn.y - y) / 2.0;
+    dx1 =  cos_th * dx + sin_th * dy;
+    dy1 = -sin_th * dx + cos_th * dy;
+    Pr1 = rx * rx;
+    Pr2 = ry * ry;
+    Px = dx1 * dx1;
+    Py = dy1 * dy1;
+    /* Spec : check if radii are large enough */
+    check = Px / Pr1 + Py / Pr2;
+    if(check > 1)
+    {
+        rx = rx * sqrt(check);
+        ry = ry * sqrt(check);
+    }
+
+    a00 = cos_th / rx;
+    a01 = sin_th / rx;
+    a10 = -sin_th / ry;
+    a11 = cos_th / ry;
+    pt0.x = a00 * cur_posn.x + a01 * cur_posn.y;
+    pt0.y = a10 * cur_posn.x + a11 * cur_posn.y;
+    pt1.x = a00 * x + a01 * y;
+    pt1.y = a10 * x + a11 * y;
+    /* (x0, y0) is current point in transformed coordinate space.
+       (x1, y1) is new point in transformed coordinate space.
+
+       The arc fits a unit-radius circle in this space.
+    */
+    d = (pt1.x - pt0.x) * (pt1.x - pt0.x) + (pt1.y - pt0.y) * (pt1.y - pt0.y);
+    sfactor_sq = 1.0 / d - 0.25;
+    if (sfactor_sq < 0) sfactor_sq = 0;
+    sfactor = sqrt (sfactor_sq);
+    if (sweep_flag == large_arc_flag) sfactor = -sfactor;
+    center.x = 0.5 * (pt0.x + pt1.x) - sfactor * (pt1.y - pt0.y);
+    center.y = 0.5 * (pt0.y + pt1.y) + sfactor * (pt1.x - pt0.x);
+    /* (xc, yc) is center of the circle. */
+
+    th0 = atan2 (pt0.y - center.y, pt0.x - center.x);
+    th1 = atan2 (pt1.y - center.y, pt1.x - center.x);
+
+    th_arc = th1 - th0;
+
+    if (th_arc < 0 && sweep_flag)
+        th_arc += 2 * M_PI;
+    else if (th_arc > 0 && !sweep_flag)
+        th_arc -= 2 * M_PI;
+
+    /* XXX: I still need to evaluate the math performed in this
+       function. The critical behavior desired is that the arc must be
+       approximated within an arbitrary error tolerance, (which the
+       user should be able to specify as well). I don't yet know the
+       bounds of the error from the following computation of
+       n_segs. Plus the "+ 0.001" looks just plain fishy. -cworth */
+    n_segs = ceil (fabs (th_arc / (M_PI * 0.5 + 0.001)));
+
+    for (i = 0; i < n_segs; i++) {
+        ((svg_render_state_t*)ptr)->path_arc_segment ( center,
+                                        th0 + i * th_arc / n_segs,
+                                        th0 + (i + 1) * th_arc / n_segs,
+                                        rx, ry, x_axis_rotation);
+    }
+
+
+
     return SVG_STATUS_SUCCESS;
 }
 
