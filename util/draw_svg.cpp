@@ -22,10 +22,12 @@ class svg_render_state_t
 
         void set_transform( double a, double b, double c, double d, double e, double f );
 
+        xy get_cur_posn( void ){ return cur_posn; }
         xy get_last_moved_to( void ){ return last_moved_to; }
     private:
         double transform[3][3];
         xy last_moved_to;
+        xy cur_posn;
         Device::Generic & device;
         xy apply_transform( const xy & pt );
 };
@@ -37,6 +39,7 @@ bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & pt
     xy bufc = apply_transform( ptc );
     xy bufd = apply_transform( ptd );
     cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<'.'<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
+    cur_posn = ptd;
     return device.curve_to( bufa, bufb, bufc, bufd );
 }
 
@@ -45,6 +48,7 @@ bool svg_render_state_t::move_to( const xy & pt )
 {
     xy buf;
     last_moved_to = pt;
+    cur_posn      = pt;
     buf = apply_transform(pt);
     cout<<"    transform mov to:"<<buf.x<<','<<buf.y<<endl;
     return device.move_to( buf );
@@ -106,6 +110,7 @@ bool svg_render_state_t::cut_to( const xy & pt )
 {
     xy buf;
 
+    cur_posn = pt;
     buf = apply_transform( pt );
     cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
     return device.cut_to( buf );
@@ -169,21 +174,38 @@ static svg_status_t line_callback( void * ptr, double x, double y )
 
 static svg_status_t curve_callback( void * ptr, double x1, double y1, double x2, double y2, double x3, double y3 )
 {
+    xy p1 = { x1, y1 };
+    xy p2 = { x2, y2 };
+    xy p3 = { x3, y3 };
+
     cout <<"Doing a curve!"<<endl;
+    ((svg_render_state_t*)ptr)->curve_to(
+        ((svg_render_state_t*)ptr)->get_cur_posn(),
+        p1,
+        p2,
+        p3);
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t quadratic_curve_callback( void * ptr, double x1, double y1, double x2, double y2 )
 {
+    xy p1 = { x1, y1 };
+    xy p2 = { x2, y2 };
+
     cout <<"Doing a quadratic curve"<<endl;
+    ((svg_render_state_t*)ptr)->curve_to(
+        ((svg_render_state_t*)ptr)->get_cur_posn(),
+        p1,
+        p1,
+        p2);
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t arc_callback( void * ptr, double rx, double ry, double x_axis_rotation, int large_arc_flag, int sweep_flag, double x, double y )
 {
-    cout<<"Doing an arc"<<endl;
+    cout<<"Doing an arc at"<<x<<','<<y<<" with rx="<<rx<<" and ry="<<ry<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
@@ -367,8 +389,8 @@ static svg_status_t render_path_callback( void * ptr )
 
 static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_length_t * cy, svg_length_t * rx, svg_length_t * ry )
 {
-    //Draw an ellipse out of 8 beziers.
-    xy control_pts[16];
+    //Draw an ellipse out of 4 beziers.
+    xy control_pts[12];
 
     cout <<"Rendering ellipse"<<endl;
     cout <<"    cx=" << cx->value<<endl;
@@ -376,110 +398,76 @@ static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_
     cout <<"    rx=" << rx->value<<endl;
     cout <<"    ry=" << ry->value<<endl;
 
-    for( int i = 0; i < 16; ++i )
+    for( int i = 0; i < 12; ++i )
     {
         control_pts[i].x = cx->value;
         control_pts[i].y = cy->value;
     }
+
+    #define KAPPA .55228475
 
     //Right
     control_pts[ 0].x += rx->value;
     control_pts[ 0].y += 0.0;
 
     control_pts[ 1].x += rx->value;
-    control_pts[ 1].y += ( sqrt( 2 ) - 1 ) * ry->value;
+    control_pts[ 1].y += ry->value * KAPPA;
 
-    control_pts[ 2].x += sqrt( 2 ) * ( rx->value ) / 2;
-    control_pts[ 2].y += sqrt( 2 ) * ( ry->value ) / 2;
-
-    control_pts[ 3].x += ( sqrt( 2 ) - 1 ) * rx->value;
-    control_pts[ 3].y += ry->value;
+    control_pts[ 2].x += rx->value * KAPPA;
+    control_pts[ 2].y += ry->value;
 
     //Top
-    control_pts[ 4].x -= 0.0;
+    control_pts[ 3].x -= 0.0;
+    control_pts[ 3].y += ry->value;
+
+    control_pts[ 4].x -= rx->value * KAPPA;
     control_pts[ 4].y += ry->value;
 
-    control_pts[ 5].x -= ( sqrt( 2 ) - 1 ) * rx->value;
-    control_pts[ 5].y += ry->value;
-
-    control_pts[ 6].x -= sqrt( 2 ) * rx->value / 2;
-    control_pts[ 6].y += sqrt( 2 ) * ry->value / 2;
-
-    control_pts[ 7].x -= rx->value;
-    control_pts[ 7].y += ( sqrt( 2 ) - 1 ) * ry->value;
+    control_pts[ 5].x -= rx->value;
+    control_pts[ 5].y += ry->value * KAPPA;
 
     //Left
-    control_pts[ 8].x -= rx->value;
-    control_pts[ 8].y -= 0.0;
+    control_pts[ 6].x -= rx->value;
+    control_pts[ 6].y -= 0.0;
 
-    control_pts[ 9].x -= rx->value;
-    control_pts[ 9].y -= ( sqrt( 2 ) - 1 ) * ry->value;
+    control_pts[ 7].x -= rx->value;
+    control_pts[ 7].y -= ry->value * KAPPA;
 
-    control_pts[10].x -= sqrt( 2 ) * rx->value / 2;
-    control_pts[10].y -= sqrt( 2 ) * ry->value / 2;
-
-    control_pts[11].x -= ( sqrt( 2 ) - 1 ) * rx->value;
-    control_pts[11].y -= ry->value;
+    control_pts[ 8].x -= rx->value * KAPPA;
+    control_pts[ 8].y -= ry->value;
 
     //Bottom
-    control_pts[12].x += 0.0;
-    control_pts[12].y -= ry->value;
+    control_pts[ 9].x += 0.0;
+    control_pts[ 9].y -= ry->value;
 
-    control_pts[13].x += ( sqrt( 2 ) - 1 ) * rx->value;
-    control_pts[13].y -= ry->value;
+    control_pts[10].x += rx->value * KAPPA;
+    control_pts[10].y -= ry->value;
 
-    control_pts[14].x += sqrt( 2 ) * rx->value / 2;
-    control_pts[14].y -= sqrt( 2 ) * ry->value / 2;
-
-    control_pts[15].x += rx->value;
-    control_pts[15].y -= ( sqrt( 2 ) - 1 ) * ry->value;
+    control_pts[11].x += rx->value;
+    control_pts[11].y -= ry->value * KAPPA;
 
     ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 0],
         control_pts[ 1],
-        control_pts[ 1],
-        control_pts[ 2]);
-
-    ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 2],
-        control_pts[ 3],
-        control_pts[ 3],
-        control_pts[ 4]);
+        control_pts[ 3]);
 
     ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 3],
         control_pts[ 4],
-        control_pts[ 5],
         control_pts[ 5],
         control_pts[ 6]);
 
     ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 6],
         control_pts[ 7],
-        control_pts[ 7],
-        control_pts[ 8]);
-
-    ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 8],
-        control_pts[ 9],
-        control_pts[ 9],
-        control_pts[10]);
+        control_pts[ 9]);
 
     ((svg_render_state_t*)ptr)->curve_to(
+        control_pts[ 9],
         control_pts[10],
         control_pts[11],
-        control_pts[11],
-        control_pts[12]);
-
-    ((svg_render_state_t*)ptr)->curve_to(
-        control_pts[12],
-        control_pts[13],
-        control_pts[13],
-        control_pts[14]);
-
-    ((svg_render_state_t*)ptr)->curve_to(
-        control_pts[14],
-        control_pts[15],
-        control_pts[15],
         control_pts[ 0]);
 
     return SVG_STATUS_SUCCESS;
