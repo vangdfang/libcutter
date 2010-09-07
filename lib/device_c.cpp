@@ -29,6 +29,8 @@
 #include "btea.h"
 #include "device_c.hpp"
 
+static inline uint32_t htocl( const uint32_t input );
+
 struct __attribute__( __packed__ ) lmc_command
 {
     uint8_t  bytes;
@@ -121,9 +123,9 @@ namespace Device
 
         l.bytes  =13;
         l.cmd    = 0x40;
-        l.data[0]=get_rand();
-        l.data[1]=ptbuffer.y;
-        l.data[2]=ptbuffer.x;
+        l.data[0]=htocl( get_rand() );
+        l.data[1]=htocl( ptbuffer.y );
+        l.data[2]=htocl( ptbuffer.x );
         btea(l.data, 3, k );
 
         bool ret = false;
@@ -147,4 +149,34 @@ namespace Device
         buf.y = 12;
         return buf;
     }
+}
+
+/******************************************
+Host endianness TO device C endianness Long
+
+Device C talks little endian, so
+iff LE, return LE
+iff BE, return LE
+else assert
+******************************************/
+static inline uint32_t htocl( const uint32_t input )
+{
+#if defined( __LITTLE_ENDIAN__ )
+//90% of cases
+return input;
+//9% of cases
+#elif defined(  __BIG_ENDIAN__ )
+return ( ( input & 0x000000FF ) << 24 ) |
+       ( ( input & 0x0000FF00 ) << 8  ) |
+       ( ( input & 0x00FF0000 ) >> 8  ) |
+       ( ( input & 0xFF000000 ) >> 24 ) ;
+#elif defined( __MIDDLE_ENDIAN__ ) || defined( __PDP_ENDIAN__ )
+return ( ( input & 0x0000FFFF ) << 16 ) |
+       ( ( input & 0xFFFF0000 ) >> 16 ) ;
+#else
+//this endianness isn't supported
+//We'll surely welcome a patch
+assert( 0 );
+return 0;
+#endif
 }
