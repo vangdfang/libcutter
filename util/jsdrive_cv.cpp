@@ -36,13 +36,9 @@
 #include <string.h>
 #include <pthread.h>
 
-#include <opencv/highgui.h>
-
 #include <linux/joystick.h>
-#include <iostream>
-using namespace std;
 
-#include "device_cv_sim.hpp"
+#include "device_sim.hpp"
 
 static xy   pt={3,-4};
 static bool tool_down = false;
@@ -61,33 +57,19 @@ void * thread( void * ptr )
 
     c.move_to(startpt);
 
-    cvNamedWindow("cutter");
     while( running )
     {
-        IplImage * image = c.get_image();
-
         if( tool_down )
         {
-            cout<<"Cutting to "<<pt.x<<" "<<pt.y<<endl;
             c.cut_to(pt);
         }
         else
         {
-            cout<<"Moving  to "<<pt.x<<" "<<pt.y<<endl;
             c.move_to(pt);
         }
 
-        cvShowImage("cutter", image );
-        if( cvWaitKey(10) == ' ' )
-        {
-            //restart to write an image
-            c.stop();
-            c.start();
-        }
-
-        cvReleaseImage( &image );
     }
-
+    c.stop();
     pthread_exit( NULL );
 }
 
@@ -157,7 +139,6 @@ int main (int argc, char **argv)
 
             pt.x = (float)(((int) axis[0])+32767) * 6.0 / 65535;
             pt.y = (float)(((int) axis[1])+32767) * 6.0 / 65535;
-            cout<<"moving to:"<<pt.x<<' '<<pt.y<<endl;
 
             fflush(stdout);
         }

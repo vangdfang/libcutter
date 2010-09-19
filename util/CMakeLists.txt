@@ -1,11 +1,11 @@
 project (libcutter)
-cmake_minimum_required(VERSION 2.6.4)
+cmake_minimum_required(VERSION 2.6.0)
     if(COMMAND cmake_policy)
         cmake_policy(SET CMP0003 NEW)
     endif(COMMAND cmake_policy)
 include_directories(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/include/pub)
 
-find_library(HAS_OPENCV NAMES cv highgui)
+find_library(HAS_SDL NAMES SDL SDL_gfx)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable (jsdrive jsdrive.cpp)
@@ -32,11 +32,11 @@ target_link_libraries (test_btea cutter)
 add_executable (interpreter interpreter.cpp)
 target_link_libraries (interpreter cutter)
 
-add_executable (interpreter_cv interpreter_cv.cpp)
-target_link_libraries (interpreter_cv cutter)
+if(HAS_SDL)
+    add_executable (interpreter_cv interpreter_cv.cpp)
+    target_link_libraries (interpreter_cv cutter)
 
-if(HAS_OPENCV)
     add_executable (jsdrive_cv jsdrive_cv.cpp)
-    target_link_libraries (jsdrive_cv cutter pthread cv highgui)
-endif(HAS_OPENCV)
+    target_link_libraries (jsdrive_cv cutter pthread)
+endif(HAS_SDL)
 

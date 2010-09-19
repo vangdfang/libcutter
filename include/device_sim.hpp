@@ -26,7 +26,8 @@
 #define DEVICE_CV_SIM_HPP
 
 #include <stdint.h>
-#include <opencv/cv.h>
+#include <SDL/SDL.h>
+
 #include "device.hpp"
 #include "types.h"
 
@@ -43,15 +44,16 @@ namespace Device
             /* virtual */ bool start();
             /* virtual */ bool stop();
             /* virtual */ xy   get_dimensions();
-            IplImage * get_image();
+            SDL_Surface * get_image();
             bool set_tool_width( const float tool_width );
 
         private:
             xy convert_to_internal( const xy &input );
+            xy convert_to_external( const xy &input );
             xy current_position;
             std::string output_filename;
             bool running;
-            IplImage * image;
+            SDL_Surface * image;
             float tool_width;
     };
 }

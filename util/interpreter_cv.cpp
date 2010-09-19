@@ -2,10 +2,9 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
-#include <opencv/highgui.h>
 using namespace std;
 
-#include "device_cv_sim.hpp"
+#include "device_sim.hpp"
 
 int main( int numArgs, char * args[] )
 {
@@ -84,11 +83,7 @@ int main( int numArgs, char * args[] )
         }
     }
 
-    IplImage * image = c.get_image();
-    cvNamedWindow("cutter");
-    cvShowImage("cutter", image );
-    cvWaitKey(0);
-    cvReleaseImage( &image );
+    sleep(1);
     c.stop();
     return 0;
 }

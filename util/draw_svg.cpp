@@ -4,7 +4,7 @@
 
 #include <opencv/highgui.h>
 
-#include "device_cv_sim.hpp"
+#include "device_sim.hpp"
 
 using namespace std;
 
@@ -50,8 +50,8 @@ void svg_render_state_t::path_arc_segment( const xy & center, double th0, double
     sin_th = sin (x_axis_rotation * (M_PI / 180.0));
     cos_th = cos (x_axis_rotation * (M_PI / 180.0));
 
-    cout<<"    path arc segment at "<<center.x<<','<<center.y<<" th0="<<th0<<" th1="<<th1<<endl;
-    cout<<"        rx="<<rx<<" ry="<<ry<<" rot="<<x_axis_rotation<<endl;
+    //cout<<"    path arc segment at "<<center.x<<','<<center.y<<" th0="<<th0<<" th1="<<th1<<endl;
+    //cout<<"        rx="<<rx<<" ry="<<ry<<" rot="<<x_axis_rotation<<endl;
 
     /* inverse transform compared with rsvg_path_arc */
     a00 = cos_th * rx;
@@ -85,7 +85,7 @@ bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & pt
     xy bufb = apply_transform( ptb );
     xy bufc = apply_transform( ptc );
     xy bufd = apply_transform( ptd );
-    cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<','<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
+    //cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<','<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
     cur_posn = ptd;
     return device.curve_to( bufa, bufb, bufc, bufd );
 }
@@ -97,7 +97,7 @@ bool svg_render_state_t::move_to( const xy & pt )
     last_moved_to = pt;
     cur_posn      = pt;
     buf = apply_transform(pt);
-    cout<<"    transform mov to:"<<buf.x<<','<<buf.y<<endl;
+    //cout<<"    transform mov to:"<<buf.x<<','<<buf.y<<endl;
     return device.move_to( buf );
 }
 
@@ -159,7 +159,7 @@ bool svg_render_state_t::cut_to( const xy & pt )
 
     cur_posn = pt;
     buf = apply_transform( pt );
-    cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
+    //cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
     return device.cut_to( buf );
 }
 
@@ -195,7 +195,7 @@ static svg_status_t end_element_callback( void * ptr )
 static svg_status_t move_callback( void * ptr, double x, double y )
 {
     xy pt;
-    cout << "Moving to "<<x<<','<<y<<endl;
+    //cout << "Moving to "<<x<<','<<y<<endl;
 
     pt.x = x;
     pt.y = y;
@@ -209,7 +209,7 @@ static svg_status_t line_callback( void * ptr, double x, double y )
 {
     xy point;
 
-    cout << "Cutting to "<<x<<','<<y<<endl;
+    //cout << "Cutting to "<<x<<','<<y<<endl;
 
     point.x = x;
     point.y = y;
@@ -225,7 +225,7 @@ static svg_status_t curve_callback( void * ptr, double x1, double y1, double x2,
     xy p2 = { x2, y2 };
     xy p3 = { x3, y3 };
 
-    cout <<"Doing a curve!"<<endl;
+    //cout <<"Doing a curve!"<<endl;
     ((svg_render_state_t*)ptr)->curve_to(
         ((svg_render_state_t*)ptr)->get_cur_posn(),
         p1,
@@ -240,7 +240,7 @@ static svg_status_t quadratic_curve_callback( void * ptr, double x1, double y1, 
     xy p1 = { x1, y1 };
     xy p2 = { x2, y2 };
 
-    cout <<"Doing a quadratic curve"<<endl;
+    //cout <<"Doing a quadratic curve"<<endl;
     ((svg_render_state_t*)ptr)->curve_to(
         ((svg_render_state_t*)ptr)->get_cur_posn(),
         p1,
@@ -282,9 +282,9 @@ double y )
     int i, n_segs;
     double dx, dy, dx1, dy1, Pr1, Pr2, Px, Py, check;
 
-    cout<<"Doing an arc at"<<x<<','<<y<<" with rx="<<rx<<" and ry="<<ry<<endl;
-    cout<<"    with large_arc_flag="<<large_arc_flag<<endl;
-    cout<<"    with     sweep_flag="<<    sweep_flag<<endl;
+    //cout<<"Doing an arc at"<<x<<','<<y<<" with rx="<<rx<<" and ry="<<ry<<endl;
+    //cout<<"    with large_arc_flag="<<large_arc_flag<<endl;
+    //cout<<"    with     sweep_flag="<<    sweep_flag<<endl;
 
     rx = fabs (rx);
     ry = fabs (ry);
@@ -364,7 +364,7 @@ double y )
 
 static svg_status_t close_path_callback( void * ptr )
 {
-    cout <<"Closing path"<<endl;
+    //cout <<"Closing path"<<endl;
 
     ((svg_render_state_t*)ptr)->cut_to( ((svg_render_state_t*)ptr)->get_last_moved_to() );
     return SVG_STATUS_SUCCESS;
@@ -408,27 +408,27 @@ static svg_status_t set_fill_rule_callback( void * ptr, const svg_fill_rule_t fi
 
 static svg_status_t set_viewport_dimension_callback( void * ptr, svg_length_t * width, svg_length_t * height )
 {
-    cout<<"Setting viewport dimensions"<<endl;
+    //cout<<"Setting viewport dimensions"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t apply_view_box_callback( void * ptr, svg_view_box_t view_box, svg_length_t *width, svg_length_t * height )
 {
-    cout<<"Applying view box"<<endl;
+    //cout<<"Applying view box"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t transform_callback( void * ptr, double a, double b, double c, double d, double e, double f)
 {
-    cout <<"Some sort of transform"<<endl;
-    cout <<"    a="<<a<<endl;
-    cout <<"    b="<<b<<endl;
-    cout <<"    c="<<c<<endl;
-    cout <<"    d="<<d<<endl;
-    cout <<"    e="<<e<<endl;
-    cout <<"    f="<<f<<endl;
+    //cout <<"Some sort of transform"<<endl;
+    //cout <<"    a="<<a<<endl;
+    //cout <<"    b="<<b<<endl;
+    //cout <<"    c="<<c<<endl;
+    //cout <<"    d="<<d<<endl;
+    //cout <<"    e="<<e<<endl;
+    //cout <<"    f="<<f<<endl;
     ((svg_render_state_t*)ptr)->set_transform(a,b,c,d,e,f);
     return SVG_STATUS_SUCCESS;
 }
@@ -527,14 +527,14 @@ static svg_status_t set_text_anchor_callback( void * ptr, svg_text_anchor_t text
 
 static svg_status_t render_line_callback( void * ptr, svg_length_t * x1, svg_length_t * y1, svg_length_t * x2, svg_length_t * y2 )
 {
-    cout<<"Rendering line from "<< x1->value<<','<< y1->value<<" to "<< x2->value<<','<< y2->value<<endl;
+    //cout<<"Rendering line from "<< x1->value<<','<< y1->value<<" to "<< x2->value<<','<< y2->value<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t render_path_callback( void * ptr )
 {
-    cout<<"Rendering path"<<endl;
+    //cout<<"Rendering path"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
@@ -544,11 +544,11 @@ static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_
     //Draw an ellipse out of 4 beziers.
     xy control_pts[12];
 
-    cout <<"Rendering ellipse"<<endl;
-    cout <<"    cx=" << cx->value<<endl;
-    cout <<"    cy=" << cy->value<<endl;
-    cout <<"    rx=" << rx->value<<endl;
-    cout <<"    ry=" << ry->value<<endl;
+    //cout <<"Rendering ellipse"<<endl;
+    //cout <<"    cx=" << cx->value<<endl;
+    //cout <<"    cy=" << cy->value<<endl;
+    //cout <<"    rx=" << rx->value<<endl;
+    //cout <<"    ry=" << ry->value<<endl;
 
     for( int i = 0; i < 12; ++i )
     {
@@ -652,13 +652,13 @@ svg_length_t * ry_len )
         ry = height / 2;
     }
 
-    cout <<"Rendering rect"<<endl;
-    cout <<"         x=" << x<<endl;
-    cout <<"         y=" << y<<endl;
-    cout <<"        rx=" << rx<<endl;
-    cout <<"        ry=" << ry<<endl;
-    cout <<"     width=" << width<<endl;
-    cout <<"    height=" << height<<endl;
+    //cout <<"Rendering rect"<<endl;
+    //cout <<"         x=" << x<<endl;
+    //cout <<"         y=" << y<<endl;
+    //cout <<"        rx=" << rx<<endl;
+    //cout <<"        ry=" << ry<<endl;
+    //cout <<"     width=" << width<<endl;
+    //cout <<"    height=" << height<<endl;
 
     //    point.x = x->value + ((svg_render_state_t*)ptr)->get_last_moved_to().x;
     //    point.y = y->value + ((svg_render_state_t*)ptr)->get_last_moved_to().y;
@@ -716,14 +716,14 @@ svg_length_t * ry_len )
 
 static svg_status_t render_text_callback( void * ptr, svg_length_t * x, svg_length_t * y, const char * utf8 )
 {
-    cout<<"Rendering text:"<<utf8<<endl;
+    //cout<<"Rendering text:"<<utf8<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
 
 static svg_status_t render_image_callback( void * ptr, unsigned char * data, unsigned int data_width, unsigned int data_height, svg_length_t *x, svg_length_t * y, svg_length_t * width, svg_length_t * height )
 {
-    cout<<"Rendering image"<<endl;
+    //cout<<"Rendering image"<<endl;
     return SVG_STATUS_SUCCESS;
 }
 
@@ -734,6 +734,12 @@ int main(int numArgs, char * args[] )
     svg_length_t width;
     svg_length_t height;
     svg_render_engine_t engine;
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    {
+        fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+        exit(1);
+    }
 
     if( numArgs != 3 )
     {
@@ -789,24 +795,16 @@ int main(int numArgs, char * args[] )
     engine.arc_to                 = arc_callback;
     engine.close_path             = close_path_callback;
 
-    cout << "svg create returned: " << svg_create( &svg ) << endl;
-    cout << "svg_parse  returned: " << svg_parse( svg, args[1] ) << endl;
+    svg_create( &svg );
+    svg_parse( svg, args[1] );
 
     svg_get_size( svg, &width, &height );
     cout << "SVG: "<< width.value << "x" << height.value << endl;
 
-    cout << "svg_render returned: " << svg_render( svg, &engine, (void*)&state ) << endl;
+    svg_render( svg, &engine, (void*)&state );
 
-    svg_get_size( svg, &width, &height );
-    cout << "SVG: "<< width.value << "x" << height.value << endl;
+    svg_destroy( svg );
 
-    cout << "svg dstry  returned: " << svg_destroy( svg ) << endl;
-
-    IplImage * image = c.get_image();
-    cvNamedWindow("cutter");
-    cvShowImage("cutter", image );
-    cvWaitKey(0);
-    cvReleaseImage( &image );
-
+    sleep(1);
     c.stop();
 }

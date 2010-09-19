@@ -19,7 +19,7 @@ if(SWIG_FOUND)
     endif(PYTHONLIBS_FOUND)
 endif(SWIG_FOUND)
 
-find_library(HAS_OPENCV NAMES cv highgui)
+find_library(HAS_SDL NAMES SDL SDL_gfx)
 
 set(cutter_files
     serial_port.cpp
@@ -33,19 +33,19 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND cutter_files serial_port_win32.cpp)
 endif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
-if(HAS_OPENCV)
-    list(APPEND cutter_files device_cv_sim.cpp)
-endif(HAS_OPENCV)
+if(HAS_SDL)
+    list(APPEND cutter_files device_sim.cpp)
+endif(HAS_SDL)
 
 add_library (cutter SHARED ${cutter_files})
-if(HAS_OPENCV)
-    target_link_libraries (cutter cv highgui)
-endif(HAS_OPENCV)
+if(HAS_SDL)
+    target_link_libraries (cutter SDL SDL_gfx)
+endif(HAS_SDL)
 
 if(PYTHONLIBS_FOUND)
     swig_add_module(cutter python cutter.i ${cutter_files})
     swig_link_libraries(cutter ${PYTHON_LIBRARIES})
-    if(HAS_OPENCV)
-        swig_link_libraries(cutter cv highgui)
-    endif(HAS_OPENCV)
+    if(HAS_SDL)
+        swig_link_libraries(cutter SDL SDL_gfx)
+    endif(HAS_SDL)
 endif(PYTHONLIBS_FOUND)
