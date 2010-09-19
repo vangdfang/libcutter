@@ -48,15 +48,15 @@ namespace Device
             /* virtual */ xy   get_dimensions();
             inline void set_move_key( ckey_type k )
             {
-                memcpy( m_move_key, k, sizeof(k)*4 );
+                memcpy( m_move_key, k, sizeof(ckey_type) );
             }
             inline void set_line_key( ckey_type k )
             {
-                memcpy( m_line_key, k, sizeof(k)*4 );
+                memcpy( m_line_key, k, sizeof(ckey_type) );
             }
             inline void set_curve_key( ckey_type k )
             {
-                memcpy( m_curve_key, k, sizeof(k)*4 );
+                memcpy( m_curve_key, k, sizeof(ckey_type) );
             }
             inline bool is_open()
             {
