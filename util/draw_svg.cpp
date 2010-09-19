@@ -2,8 +2,6 @@
 #include <cstring>
 #include <svg.h>
 
-#include <opencv/highgui.h>
-
 #include "device_sim.hpp"
 
 using namespace std;

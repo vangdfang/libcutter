@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
-#include <opencv/highgui.h>
 using namespace std;
 
 #include "keys.h"
