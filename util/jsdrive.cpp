@@ -94,14 +94,12 @@ void * thread( void * ptr )
         temp.y = status->pt.y;
         if( status->tool_down )
         {
-            cout<<"Cutting to "<<temp.x<<" "<<temp.y<<endl;
             pthread_mutex_unlock(&status->mutex);
             c.cut_to(temp);
             pthread_mutex_lock(&status->mutex);
         }
         else
         {
-            cout<<"Moving  to "<<temp.x<<" "<<temp.y<<endl;
             pthread_mutex_unlock(&status->mutex);
             c.move_to(temp);
             pthread_mutex_lock(&status->mutex);
