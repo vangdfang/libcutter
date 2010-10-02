@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstring>
+#include <cmath>
 #include <svg.h>
 
 #include "device_sim.hpp"
