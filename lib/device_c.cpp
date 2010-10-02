@@ -161,22 +161,16 @@ else assert
 ******************************************/
 static inline uint32_t htocl( const uint32_t input )
 {
-#if defined( __LITTLE_ENDIAN__ )
-//90% of cases
-return input;
-//9% of cases
-#elif defined(  __BIG_ENDIAN__ )
+#if defined(  _BIG_ENDIAN )
 return ( ( input & 0x000000FF ) << 24 ) |
        ( ( input & 0x0000FF00 ) << 8  ) |
        ( ( input & 0x00FF0000 ) >> 8  ) |
        ( ( input & 0xFF000000 ) >> 24 ) ;
-#elif defined( __MIDDLE_ENDIAN__ ) || defined( __PDP_ENDIAN__ )
+#elif defined( _MIDDLE_ENDIAN ) || defined( _PDP_ENDIAN )
 return ( ( input & 0x0000FFFF ) << 16 ) |
        ( ( input & 0xFFFF0000 ) >> 16 ) ;
 #else
-//this endianness isn't supported
-//We'll surely welcome a patch
-assert( 0 );
-return 0;
+//Assume little endian
+return input;
 #endif
 }
