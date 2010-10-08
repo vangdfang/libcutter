@@ -3,9 +3,7 @@
 #include <cmath>
 #include <svg.h>
 
-#include "device_c.hpp"
-
-#include "keys.h"
+#include "device_sim.hpp"
 
 using namespace std;
 
@@ -149,10 +147,6 @@ xy svg_render_state_t::apply_transform( const xy & pt )
 
     buf.x /= 100;
     buf.y /= 100;
-
-    //Add a half-inch. This should prevent the mat from fallingout of the device
-    //Also, paperspace now reduced by half-inch
-    buf.y += .5;
 
     return buf;
 }
@@ -740,25 +734,21 @@ int main(int numArgs, char * args[] )
     svg_length_t height;
     svg_render_engine_t engine;
 
+    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    {
+        fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
+        exit(1);
+    }
+
     if( numArgs != 3 )
     {
         cout<<"Usage: "<<args[0]<<" svgfile.svg iodevice"<<endl;
         return 4;
     }
 
-    Device::C c( args[2] );
+    Device::CV_sim c( args[2] );
     c.stop();
     c.start();
-
-    ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
-    c.set_move_key(move_key);
-
-    ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
-    c.set_line_key(line_key);
-
-    ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
-    c.set_curve_key(curve_key);
-
 
     svg_render_state_t state(c);
 

@@ -33,6 +33,9 @@ add_executable (interpreter interpreter.cpp)
 target_link_libraries (interpreter cutter)
 
 if(HAS_SDL)
+    add_executable (draw_svg_cv draw_svg_cv.cpp)
+    target_link_libraries (draw_svg_cv png cutter jpeg svg)
+
     add_executable (interpreter_cv interpreter_cv.cpp)
     target_link_libraries (interpreter_cv cutter)
 
