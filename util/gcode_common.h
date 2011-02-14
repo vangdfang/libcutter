@@ -51,6 +51,10 @@ for( i = 0; i < input.size(); ++i )
 	last_was_whitespace = is_whitespace( input[i] );
 	}
 
+#if( DEBUG >= 2 )
+	cout<<"Split found "<<retn.size()<<" things"<<endl;
+#endif
+
 return retn;
 }
 
@@ -71,14 +75,27 @@ bool parse_gcode( string file, Device::Generic & cutter)
 		#endif
 
 		if( !inputfile )
+			{
+			#if DEBUG>=1
+				cout<<"EndOfInput"<<endl;
+			#endif
 			free( linebuf );
 			break;
+			}
 
 		if( *linebuf == ';' )
+			{
+			#if( DEBUG >=2 )
+				cout<<"Skipping comment"<<endl;
+			#endif
 			free( linebuf );
 			continue;
+			}
 
 		line_parts = split( linebuf );
+		#if DEBUG >= 2
+			cout<<"Found "<<line_parts.size()<<" tokens"<<endl;
+		#endif
 		free( linebuf );
 
 		if( strcmp( line_parts[0].c_str(), "G1") == 0 )
@@ -94,8 +111,9 @@ bool parse_gcode( string file, Device::Generic & cutter)
 				xy point;
 
 				#if DEBUG >= 1
-				cout<<"COORDS: XPART:"<<line_parts[1]<<" YPART:"<<line_parts[2]<<endl;
+					cout<<"COORDS: XPART:"<<line_parts[1]<<" YPART:"<<line_parts[2]<<endl;
 				#endif
+
 				//Convert string arg to float in mm, then to inches, then add 1/2 inch for cutting surface
 				point.x = ( atof( line_parts[1].c_str() + 1 ) / MM_PER_INCH) + .5;
 				point.y = ( atof( line_parts[2].c_str() + 1 ) / MM_PER_INCH) + .5;

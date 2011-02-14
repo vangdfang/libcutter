@@ -37,9 +37,11 @@ cutter.set_move_key(move_key);
 ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
 cutter.set_line_key(line_key);
 
-
+ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
+cutter.set_curve_key(curve_key);
 
 parse_gcode( args[2], cutter );
+
 cutter.stop();
 
 return 0;

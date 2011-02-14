@@ -27,11 +27,9 @@ if( num_args != 3 )
 Device::CV_sim cutter( args[1] );
 
 cutter.stop();
-sleep(1);
 cutter.start();
-sleep(1);
 parse_gcode( args[2], cutter );
 cutter.stop();
-
+sleep(1);
 return 0;
 }
