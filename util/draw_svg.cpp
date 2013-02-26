@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cmath>
 #include <svg.h>
+#include <unistd.h>
 
 #include "device_c.hpp"
 

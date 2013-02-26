@@ -31,6 +31,7 @@
 #include <vector>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 using std::printf;
 using std::cout;
