@@ -100,13 +100,9 @@ int main (int argc, char **argv)
         int *axis;
         int *button;
         struct js_event js;
-        int *oldaxis;
-        int *oldbutton;
 
         axis      = (int*)calloc(axes,    sizeof(int)  );
-        oldaxis   = (int*)calloc(axes,    sizeof(int)  );
         button    = (int*)calloc(buttons, sizeof(char) );
-        oldbutton = (int*)calloc(buttons, sizeof(char) );
 
         pthread_t tid;
         pthread_create( &tid, NULL, thread, NULL );
