@@ -6,6 +6,8 @@
 #include <cstring>
 #include "device_sim.hpp"
 
+#include <unistd.h>
+
 using namespace std;
 
 //DEBUG LEVELS:

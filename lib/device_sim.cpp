@@ -23,6 +23,7 @@
  * 3101 Mercier Street #404, Kansas City, MO 64111
  */
 #include <stdint.h>
+#include <unistd.h>
 #include "device_sim.hpp"
 #include "types.h"
 
