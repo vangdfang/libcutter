@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 #include <cstring>
 #include "device_sim.hpp"
 
@@ -16,7 +17,7 @@ using namespace std;
 //2 - Each line of GCODE as parsed
 #define DEBUG 0
 
-#include "gcode_common.h"
+#include "gcode.hpp"
 
 int main( int num_args, char * args[] )
 {
