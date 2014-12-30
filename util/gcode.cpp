@@ -57,7 +57,7 @@ void arc_segment_right(Device::Generic & cutter, const xy & center,
 {
      printf("Right arc segment: center (%f, %f) radius %f, rotation: %f\n",
 	    center.x, center.y, r, rot/M_PI);
-     double k = (4/3)*(sqrt(2) - 1);
+     double k = (4.0/3.0)*(sqrt(2.0) - 1.0);
      xy pt1, pt2, pt3, pt4;
      rot = rot - M_PI_2;
 
@@ -125,7 +125,7 @@ void arc_segment( Device::Generic & cutter, const xy & center,
 	  return arc_segment_right(cutter, center, r, rot);
      }
      xy pt1, pt2, pt3, pt4;
-     double k = (4/3)*(sqrt(2) - 1);
+     double k = (4.0/3.0)*(sqrt(2.0) - 1.0);
      double a = th0/2;
      rot = rot - a;
 
@@ -135,10 +135,11 @@ void arc_segment( Device::Generic & cutter, const xy & center,
      pt4.x = pt1.x;
      pt4.y = -pt1.y;
 
-     pt2.x = pt1.x + k * r * sin(a);
-     pt2.y = pt1.y - k * r * cos(a);
-     pt3.x = pt2.x;
-     pt3.y = -pt2.y;
+     // get the control points
+     pt3.x = pt4.x + k * tan(a) * pt1.y;
+     pt3.y = pt4.y + k * tan(a) * pt1.x;
+     pt2.x = pt3.x;
+     pt2.y = -pt3.y;
 
      // rotate to the right spot
      double cos_rot = cos(rot);
