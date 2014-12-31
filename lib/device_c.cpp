@@ -40,6 +40,7 @@ struct __attribute__(( packed )) lmc_command
 
 namespace Device
 {
+    static const int DELAY = 170000;
     static const float INCHES_TO_C_UNITS = 404.0f;
     static const float C_UNITS_TO_INCHES = ( 1 / (INCHES_TO_C_UNITS) );
 
@@ -99,11 +100,13 @@ namespace Device
 
     bool C::start()
     {
+        m_serial.delay(DELAY);
         return m_serial.p_write( cmd_start, sizeof( cmd_start ) );
     }
 
     bool C::stop()
     {
+        m_serial.delay(DELAY);
         return m_serial.p_write( cmd_stop, sizeof( cmd_stop ) );
     }
 
@@ -151,6 +154,7 @@ namespace Device
     }
 }
 
+
 /******************************************
 Host endianness TO device C endianness Long
 
@@ -161,16 +165,16 @@ else assert
 ******************************************/
 static inline uint32_t htocl( const uint32_t input )
 {
-#if defined(  _BIG_ENDIAN )
-return ( ( input & 0x000000FF ) << 24 ) |
-       ( ( input & 0x0000FF00 ) << 8  ) |
-       ( ( input & 0x00FF0000 ) >> 8  ) |
-       ( ( input & 0xFF000000 ) >> 24 ) ;
-#elif defined( _MIDDLE_ENDIAN ) || defined( _PDP_ENDIAN )
-return ( ( input & 0x0000FFFF ) << 16 ) |
-       ( ( input & 0xFFFF0000 ) >> 16 ) ;
-#else
-//Assume little endian
-return input;
-#endif
+    #if defined(  _BIG_ENDIAN )
+    return ( ( input & 0x000000FF ) << 24 ) |
+        ( ( input & 0x0000FF00 ) << 8  ) |
+        ( ( input & 0x00FF0000 ) >> 8  ) |
+        ( ( input & 0xFF000000 ) >> 24 ) ;
+    #elif defined( _MIDDLE_ENDIAN ) || defined( _PDP_ENDIAN )
+    return ( ( input & 0x0000FFFF ) << 16 ) |
+        ( ( input & 0xFFFF0000 ) >> 16 ) ;
+    #else
+    //Assume little endian
+    return input;
+    #endif
 }
