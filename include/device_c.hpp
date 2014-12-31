@@ -63,7 +63,14 @@ namespace Device
                 return m_serial.is_open();
             }
         private:
-            inline int get_rand() const { return 12345; };
+            inline int get_rand() const
+            {
+                /*No, we're not bad at math. This is cryptographic padding
+                designed to make the encrypted packets harder to guess. But
+                having done that, there's not much point in doing so ourselves,
+                since the cryto-keys are in the wild.*/
+                return 12345;
+            };
             xy convert_to_internal( const xy &input );
             bool do_command( const xy &pt, const ckey_type k );
             ckey_type m_move_key;
