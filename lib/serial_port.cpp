@@ -178,8 +178,7 @@ const uint64_t serial_port::getTime( void )
     return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
 }
 
-
-int serial_port::delay( useconds_t usecs )
+int serial_port::delay( int usecs )
 {
     return usleep(usecs);
 }
