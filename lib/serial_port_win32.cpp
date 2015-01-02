@@ -120,7 +120,7 @@ size_t serial_port::p_write( const uint8_t * data, size_t size )
 
     for( i = 0; i < size; ++i )
     {
-        usleep(1000);
+	delay(1000);
 
         if( WriteFile( fd, data, 1, &bytesWritten, NULL ) )
         {
@@ -165,5 +165,6 @@ const uint64_t serial_port::getTime( void )
 
 int serial_port::delay( int usecs )
 {
-    return usleep(usecs);
+    Sleep((usecs+999)/1000);
+    return 0;
 }
