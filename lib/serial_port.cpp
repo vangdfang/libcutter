@@ -144,7 +144,7 @@ size_t serial_port::p_write( const uint8_t * data, size_t size )
     int      count = 0;
     for( i = 0; i < size; ++i )
     {
-        usleep(1000);
+	delay(1000);
 
         if( write( fd, data, 1 ) == 1 )
         {
@@ -176,4 +176,9 @@ const uint64_t serial_port::getTime( void )
     timeval tv;
     gettimeofday( &tv, NULL );
     return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
+}
+
+int serial_port::delay( int usecs )
+{
+    return usleep(usecs);
 }
