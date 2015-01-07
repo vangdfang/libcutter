@@ -21,29 +21,37 @@ using namespace std;
 
 int main( int num_args, char * args[] )
 {
-if( num_args != 3 )
-	{
-	cout<<"Usage: "<<args[0]<<" /dev/ttyCricut0 gcodefile.gcode"<<endl;
-	exit(1);
-	}
+     if( num_args != 3 )
+     {
+	  cout<<"Usage: "<<args[0]<<" /dev/ttyCricut0 gcodefile.gcode"<<endl;
+	  exit(1);
+     }
 
-Device::C cutter( args[1] );
+     Device::C cutter( args[1] );
+     gcode parser( args[2], cutter );
 
-cutter.stop();
-cutter.start();
+     cutter.stop();
+     cutter.start();
 
-ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
-cutter.set_move_key(move_key);
+     ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
+     cutter.set_move_key(move_key);
 
-ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
-cutter.set_line_key(line_key);
+     ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
+     cutter.set_line_key(line_key);
 
-ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
-cutter.set_curve_key(curve_key);
+     ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
+     cutter.set_curve_key(curve_key);
 
-parse_gcode( args[2], cutter );
+     try
+     {
+	       parser.parse_file();
+     }
+     catch(...)
+     {
+	  printf("Unhandled exception");
+     }
 
-cutter.stop();
+     cutter.stop();
 
-return 0;
+     return 0;
 }
