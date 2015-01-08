@@ -7,25 +7,26 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
-#include "device_c.hpp"
+#include <stdexcept>
+#include "device.hpp"
 #include "gcode.hpp"
 
 using namespace std;
 
 int debug = 0;
 
-gcode::gcode()
+gcode::gcode(Device::Generic & c):
+     cutter(c)
 {
-     cutter = Device::C();
      filename = string("");
      pen_up = true;
      metric = true;
      absolute = true;
 }
 
-gcode::gcode(const std::string & fname, Device::C & c)
+gcode::gcode(const std::string & fname, Device::Generic & c):
+     cutter(c)
 {
-     cutter = c;
      filename = fname;
      pen_up = true;
      metric = true;
@@ -41,7 +42,7 @@ void gcode::set_input(const std::string & fname)
      filename = fname;
 }
 
-void gcode::set_cutter(Device::C & c)
+void gcode::set_cutter(Device::Generic & c)
 {
      cutter = c;
 }
@@ -258,7 +259,7 @@ int get_code(const string & input, size_t *rem)
 
      tmp = input.c_str();
      retval = strtol(tmp, &end, 10);
-     *rem = (end - tmp);
+     *rem = (end - tmp) + 1;
      return retval;
 }
 
@@ -270,26 +271,39 @@ double get_value(const string & input, size_t *rem)
 
      tmp = input.c_str();
      retval = strtod(tmp, &end);
-     *rem = (end - tmp);
+     *rem = (end - tmp) + 1;
      return retval;
 }     
 	  
 xy get_xy(const string & input, size_t *rem)
 {
      size_t tmp;
+     size_t offset = 0;
      char command;
      xy target;
      double x, y;
-     x = get_value(input, &tmp);
-     command = get_command(input.substr(tmp+1), rem);
-     if(command != 'Y' || command != 'J')
+
+     command = get_command(input, &tmp);
+     offset += tmp;
+     if(command != 'X' && command != 'I')
      {
-	  string msg = "Unexpected value: ";
+	  string msg = "Expected first part, got: ";
 	  msg.append(input);
 	  throw msg;
      }
-     y = get_value(input.substr(*rem+1), &tmp);
-     *rem = tmp;
+     x = get_value(input.substr(offset), &tmp);
+     offset += tmp;
+     command = get_command(input.substr(offset), &tmp);
+     offset += tmp;
+     if(command != 'Y' && command != 'J')
+     {
+	  string msg = "Expected second part, got: ";
+	  msg.append(input.substr(offset));
+	  throw msg;
+     }
+     y = get_value(input.substr(offset), &tmp);
+     offset += tmp;
+     *rem = offset;
      target.x = x;
      target.y = y;
      return target;
@@ -302,7 +316,7 @@ xy get_vector(string input, size_t *rem)
      command = get_command(input, rem);
      if(command == 'I')
 	  return get_xy(input, rem);
-     string msg = "Unexpected value: ";
+     string msg = "Expected vector, got: ";
      msg.append(input);
      throw msg;
 }
@@ -314,7 +328,7 @@ xy get_target(string input, size_t *rem)
      command = get_command(input, rem);
      if(command == 'X')
 	  return get_xy(input, rem);
-     string msg = "Unexpected value: %s\n";
+     string msg = "Expected xy, got: ";
      msg.append(input);
      throw msg;
 }
@@ -323,13 +337,14 @@ void gcode::process_movement(string input)
 {
      // rapid movement to target point
      //
-     size_t rem;
+     size_t rem = 0;
      char command;
      
      command = get_command(input, &rem);
      if(command == 'Z')
      {
 	  double z = get_value(input.substr(rem), &rem);
+	  printf("Pen %s\n", (z >= 0) ? "up":"down");
 	  if(z >= 0)
 	       raise_pen();
 	  else
@@ -349,7 +364,7 @@ void gcode::process_movement(string input)
      }
      else
      {
-	  string msg = "Unknown G0 command: %s\n";
+	  string msg = "Unknown G0 command: ";
 	  msg.append(input);
 	  throw msg;
      }
@@ -360,13 +375,14 @@ void gcode::process_line(string input)
 {
      // cut from curr_pos to target_point
 
-     size_t rem;
+     size_t rem = 0;
      char command;
 
      command = get_command(input, &rem);
      if(command == 'Z')
      {
 	  double z = get_value(input.substr(rem), &rem);
+	  printf("Pen %s\n", (z >= 0) ? "up":"down");
 	  if(z >= 0)
 	       raise_pen();
 	  else
@@ -376,7 +392,7 @@ void gcode::process_line(string input)
      {
 	  xy target;
 
-	  target = get_target(input.substr(rem), &rem);
+	  target = get_target(input, &rem);
 
 	  printf("Cutting from (%f, %f) to (%f, %f)\n",
 		 curr_pos.x, curr_pos.y, target.x, target.y);
@@ -386,7 +402,7 @@ void gcode::process_line(string input)
      }
      else
      {
-	  string msg = "Unknown G1 command: %s\n";
+	  string msg = "Unknown G1 command: ";
 	  msg.append(input);
 	  throw msg;
      }
@@ -399,13 +415,13 @@ void gcode::process_clockwise_arc(string input)
      // a center point defined by the vector (i, j) from the current
      // position
 
-     size_t rem;
+     size_t rem = 0;
      char command;
      
      command = get_command(input, &rem);
      if(command == 'Z')
      {
-	  string msg = "Unexpected Z command: %s\n";
+	  string msg = "Unexpected Z command: ";
 	  msg.append(input);
 	  throw msg;
      }
@@ -414,7 +430,7 @@ void gcode::process_clockwise_arc(string input)
 	  xy target, cvec;
 	  xy center, tvec;
 	  
-	  target = get_target(input.substr(rem), &rem);
+	  target = get_target(input, &rem);
 	  cvec = get_vector(input.substr(rem), &rem);
 
 	  center.x = curr_pos.x + cvec.x;
@@ -471,9 +487,10 @@ void gcode::process_anticlockwise_arc(string input)
 void gcode::process_g_code(string input)
 {
      string val;
-     size_t rem;
+     size_t rem = 0;
 
      int code = get_code(input, &rem);
+     printf("Processing G code: %d\n", code);
      switch(code)
      {
      case 0:
@@ -511,7 +528,7 @@ void gcode::process_g_code(string input)
 	  // not supported at the moment, so we do nothing
 	  break;
      default:
-	  string msg = "Unhandled G command: %s\n";
+	  string msg = "Unhandled G command: ";
 	  msg.append(input);
 	  throw msg;
 	  break;
@@ -523,6 +540,7 @@ void gcode::process_line_number(string input)
 {
      int offset = 1;
 
+     printf("Skipping line number\n");
      // skip any white space between the N and the rest of the line
      while(isspace(input[offset]))
 	  offset++;
@@ -530,7 +548,7 @@ void gcode::process_line_number(string input)
      while(isdigit(input[offset]))
 	  offset++;
      // and skip the subsequent white space . . .
-     while(isdigit(input[offset]))
+     while(isspace(input[offset]))
 	  offset++;
 
      parse_line(input.substr(offset));
@@ -540,33 +558,31 @@ void gcode::process_parens(string input)
 {
      int offset = 1;
 
+     printf("Skipping parentheses\n");
      // skip anything not a corresponding ')'
      while(input[offset] != ')')
 	  offset++;
+     offset++;
 
      parse_line(input.substr(offset));
 }
 
 void gcode::process_misc_code(string input)
 {
-     size_t rem;
+     size_t rem = 0;
 
      int code = get_code(input, &rem);
+     printf("Processing M code: %d\n", code);
      switch(code)
      {
      case 0:
-	  // compulsory stop.
-	  // no idea what to do here, aside from assume that whatever
-	  // created the program didn't do anything weird . . .
-	  break;
      case 1:
-	  // optional stop.
-	  break;
      case 2:
-	  // program end.
+	  // stop the program
+	  throw false;
 	  break;
      default:
-	  string msg = "Unhandled M command %s\n";
+	  string msg = "Unhandled M command ";
 	  msg.append(input);
 	  throw msg;
 	  break;
@@ -577,9 +593,10 @@ void gcode::process_misc_code(string input)
 
 void gcode::parse_line(string input)
 {
-     size_t rem;
-     if(input.length() <= 0)
-	  throw 1;
+     size_t rem = 0;
+     printf("Processing line: %s\n", input.c_str());
+     if(input[0] == '\n')
+	  throw true;
 
      char command = get_command(input, &rem);
      switch(command)
@@ -604,7 +621,7 @@ void gcode::parse_line(string input)
 	  break;
 
      default:
-	  string msg = "Unhandled command %s\n";
+	  string msg = "Unhandled command ";
 	  msg.append(input);
 	  throw msg;
 	  break;
@@ -616,25 +633,32 @@ void gcode::parse_file(void)
      ifstream infile(filename.c_str());
      string line;
 
-     try
+     while(infile)
      {
-	  while(infile)
+	  std::getline(infile, line);
+	  try
 	  {
-	       std::getline(infile, line);
-	       try
-	       {
-		    parse_line(line);
-	       }
-	       catch(string msg)
-	       {
-		    printf("%s\n", msg.c_str());
-	       }
+	       parse_line(line);
+	  }
+	  catch(string msg)
+	  {
+	       printf("%s\n", msg.c_str());
+	  }
+	  catch(const std::out_of_range& oor)
+	  {
+	       // sadly, this seems to be the most reliable way to
+	       // tell that we've reached the end of the line
+	       printf("Got out of range error\n");
+	  }
+	  catch(bool completed)
+	  {
+	       // this flags a stop command
+	       if(!completed)
+		    return;
+	       // otherwise the line is done
 	  }
      }
-     catch(bool completed)
-     {
-	  printf("Parse complete\n");
-     }
+     printf("Parse complete\n");
      return;
 }
 	  

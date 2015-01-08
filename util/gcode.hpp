@@ -41,7 +41,7 @@ class gcode
 	       absolute = a;
 	  }
 
-     Device::C cutter;
+     Device::Generic & cutter;
      std::string filename;
      xy curr_pos;
 
@@ -50,12 +50,12 @@ class gcode
      bool absolute;
 
 public:
-     gcode();
-     gcode( const  std::string &, Device::C & );
+     gcode(Device::Generic &);
+     gcode( const  std::string &, Device::Generic & );
      ~gcode();
      
      void set_input(const std::string &);
-     void set_cutter(Device::C &);
+     void set_cutter(Device::Generic &);
 
      void parse_file(void);
      void parse_line(string);
