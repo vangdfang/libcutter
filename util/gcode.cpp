@@ -14,6 +14,7 @@
 using namespace std;
 
 int debug = 0;
+bool metric = true;
 
 gcode::gcode(Device::Generic & c):
      cutter(c)
@@ -45,6 +46,13 @@ void gcode::set_input(const std::string & fname)
 void gcode::set_cutter(Device::Generic & c)
 {
      cutter = c;
+}
+
+double doc_to_internal(double val)
+{
+     if(metric)
+	  return (val/MM_PER_INCH);
+     return val;
 }
 
 void debug_out(int debug_level, const string debug_text)
@@ -271,6 +279,7 @@ double get_value(const string & input, size_t *rem)
 
      tmp = input.c_str();
      retval = strtod(tmp, &end);
+     retval = doc_to_internal(retval);
      *rem = (end - tmp) + 1;
      return retval;
 }     
@@ -514,10 +523,12 @@ void gcode::process_g_code(string input)
      case 20:
 	  // input values are in inches
 	  metric = false;
+	  set_metric(metric);
 	  break;
      case 21:
 	  // input values are in millimeters
 	  metric = true;
+	  set_metric(metric);
 	  break;
      case 90:
 	  // values are absolute
