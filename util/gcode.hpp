@@ -8,11 +8,39 @@
 
 using namespace std;
 
+#ifndef DEBUG_MSG
+#define DEBUG_MSG
+const string debug_msg = "\n"							\
+     "Debug level goes from 0 (only show the most critical messages\n"	\
+     "to 5 (output lots of extra debugging information). The default\n"	\
+     "is 1 (only show error messages)\n";
+#endif
+
 // For historical reasons we use inches internally
 const double MM_PER_INCH = 25.4;
 
+enum debug_prio {
+     crit = 0,
+     err,
+     warn,
+     info,
+     debug,
+     extra_debug
+};
+
 class gcode
 {
+     // utility methods - methods, so that they can access private
+     // members and stuff
+     double doc_to_internal(double);
+     double get_value(const string &, size_t *);
+     xy get_xy(const string &, size_t *);
+     xy get_vector(const string, size_t *);
+     xy get_target(const string, size_t *);
+     void debug_out(int, const string);
+     void arc_segment_right(Device::Generic &, const xy &, double, double);
+     void arc_segment(Device::Generic &, const xy &, double, double, double);
+
      // private stuff - methods so that they can access the private
      // methods and members
      void process_movement(string);
@@ -23,6 +51,8 @@ class gcode
      void process_line_number(string);
      void process_parens(string);
      void process_misc_code(string);
+
+     void debug_out(enum debug_prio, string);
 
      inline void raise_pen(void)
 	  {
@@ -49,6 +79,9 @@ class gcode
      bool metric;
      bool absolute;
 
+     // by default, only print critical stuff
+     enum debug_prio _debug;
+
 public:
      gcode(Device::Generic &);
      gcode( const  std::string &, Device::Generic & );
@@ -72,5 +105,10 @@ public:
 	  {
 	       return absolute;
 	  }
+     inline void set_debug(enum debug_prio d)
+	  {
+	       _debug = d;
+	  }
+
 };
 #endif

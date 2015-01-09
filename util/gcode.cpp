@@ -13,11 +13,9 @@
 
 using namespace std;
 
-int debug = 0;
-bool metric = true;
-
 gcode::gcode(Device::Generic & c):
-     cutter(c)
+     cutter(c),
+     _debug(crit)
 {
      filename = string("");
      pen_up = true;
@@ -26,7 +24,8 @@ gcode::gcode(Device::Generic & c):
 }
 
 gcode::gcode(const std::string & fname, Device::Generic & c):
-     cutter(c)
+     cutter(c),
+     _debug(crit)
 {
      filename = fname;
      pen_up = true;
@@ -48,16 +47,16 @@ void gcode::set_cutter(Device::Generic & c)
      cutter = c;
 }
 
-double doc_to_internal(double val)
+double gcode::doc_to_internal(double val)
 {
      if(metric)
 	  return (val/MM_PER_INCH);
      return val;
 }
 
-void debug_out(int debug_level, const string debug_text)
+void gcode::debug_out(enum debug_prio debug_level, const string debug_text)
 {
-     if (debug >= debug_level)
+     if (debug_level <= _debug)
      {
 	  printf("%s\n", debug_text.c_str());
      }
@@ -72,25 +71,17 @@ double angle_between(const xy vec1, const xy vec2)
      return angle;
 }
 
-//Convert string arg to float in mm, then to inches
-xy get_point_from_string(const string part1, const string part2)
-{
-     xy point;
-
-     point.x = atof( part1.c_str()) / MM_PER_INCH;
-     point.y = atof( part2.c_str()) / MM_PER_INCH;
-
-     return point;
-}
-
 // we can treate right angle segments differently, because they can be
 // done with pre-calculated values that are then scaled, rotated and
 // translated
-void arc_segment_right(Device::Generic & cutter, const xy & center,
+void gcode::arc_segment_right(Device::Generic & cutter, const xy & center,
 		       double r, double rot)
 {
-     printf("Right arc segment: center (%f, %f) radius %f, rotation: %f\n",
-	    center.x, center.y, r, rot/M_PI);
+     char buf[4096];
+     snprintf(buf, 4095,
+	      "Right arc segment: center (%f, %f) radius %f, rotation: %f",
+	      center.x, center.y, r, rot/M_PI);
+     debug_out(info, string(buf));
      double k = (4.0/3.0)*(sqrt(2.0) - 1.0);
      xy pt1, pt2, pt3, pt4;
      rot = rot - M_PI_2;
@@ -139,8 +130,6 @@ void arc_segment_right(Device::Generic & cutter, const xy & center,
      pt4.y = pt4.y + center.y;
 
      // and put it into production . . .
-     printf("Cutter: curve from (%f, %f) to (%f, %f), ctrl pts (%f, %f) and (%f, %f)\n",
-	    pt1.x, pt1.y, pt4.x, pt4.y, pt2.x, pt2.y, pt3.x, pt3.y);
      cutter.curve_to( pt1, pt2, pt3, pt4 );
 }
 
@@ -150,11 +139,14 @@ void arc_segment_right(Device::Generic & cutter, const xy & center,
 //
 // Reference: http://hansmuller-flex.blogspot.com.au/2011/04/approximating-circular-arc-with-cubic.html
 // (accessed 2014-12-24)
-void arc_segment( Device::Generic & cutter, const xy & center,
+void gcode::arc_segment( Device::Generic & cutter, const xy & center,
 		  double th0, double r, double rot)
 {
-     printf("Arc segment: center (%f, %f), arc width: %f, radius %f, rotation: %f\n",
-	    center.x, center.y, th0/M_PI, r, rot/M_PI);
+     char buf[4096];
+     snprintf(buf, 4095,
+	      "Arc segment: center (%f, %f), arc width: %f, radius %f, rotation: %f",
+	      center.x, center.y, th0/M_PI, r, rot/M_PI);
+     debug_out(info, string(buf));
      if ( abs((th0 - M_PI_2)) < 0.00000000001) {
 	  return arc_segment_right(cutter, center, r, rot);
      }
@@ -210,8 +202,6 @@ void arc_segment( Device::Generic & cutter, const xy & center,
      pt4.y = pt4.y + center.y;
 
      // and put it into production . . .
-     printf("Cutter: curve from (%f, %f) to (%f, %f), ctrl pts (%f, %f) and (%f, %f)\n",
-	    pt1.x, pt1.y, pt4.x, pt4.y, pt2.x, pt2.y, pt3.x, pt3.y);
      cutter.curve_to( pt1, pt2, pt3, pt4 );
 }
 
@@ -271,7 +261,7 @@ int get_code(const string & input, size_t *rem)
      return retval;
 }
 
-double get_value(const string & input, size_t *rem)
+double gcode::get_value(const string & input, size_t *rem)
 {
      char *end;
      const char *tmp;
@@ -284,7 +274,7 @@ double get_value(const string & input, size_t *rem)
      return retval;
 }     
 	  
-xy get_xy(const string & input, size_t *rem)
+xy gcode::get_xy(const string & input, size_t *rem)
 {
      size_t tmp;
      size_t offset = 0;
@@ -318,7 +308,7 @@ xy get_xy(const string & input, size_t *rem)
      return target;
 }
 
-xy get_vector(string input, size_t *rem)
+xy gcode::get_vector(const string input, size_t *rem)
 {
      char command;
 
@@ -330,7 +320,7 @@ xy get_vector(string input, size_t *rem)
      throw msg;
 }
 
-xy get_target(string input, size_t *rem)
+xy gcode::get_target(const string input, size_t *rem)
 {
      char command;
 
@@ -348,12 +338,14 @@ void gcode::process_movement(string input)
      //
      size_t rem = 0;
      char command;
+     char buf[4096];
      
      command = get_command(input, &rem);
      if(command == 'Z')
      {
 	  double z = get_value(input.substr(rem), &rem);
-	  printf("Pen %s\n", (z >= 0) ? "up":"down");
+	  snprintf(buf, 4095, "Pen %s", (z >= 0) ? "up":"down");
+	  debug_out(info, string(buf));
 	  if(z >= 0)
 	       raise_pen();
 	  else
@@ -365,11 +357,16 @@ void gcode::process_movement(string input)
 
 	  target = get_target(input, &rem);
 
-	  printf("Rapid move from (%f, %f) to (%f, %f)\n",
-		 curr_pos.x, curr_pos.y, target.x, target.y);
+	  snprintf(buf, 4095,
+		   "Rapid move from (%f, %f) to (%f, %f)",
+		   curr_pos.x, curr_pos.y, target.x, target.y);
+	  debug_out(info, string(buf));
 	  cutter.move_to(target);
 	  curr_pos = target;
-	  printf("Current position: %f, %f\n", curr_pos.x, curr_pos.y);
+	  snprintf(buf, 4095,
+		   "Current position: %f, %f",
+		   curr_pos.x, curr_pos.y);
+	  debug_out(debug, string(buf));
      }
      else
      {
@@ -386,12 +383,14 @@ void gcode::process_line(string input)
 
      size_t rem = 0;
      char command;
+     char buf[4096];
 
      command = get_command(input, &rem);
      if(command == 'Z')
      {
 	  double z = get_value(input.substr(rem), &rem);
-	  printf("Pen %s\n", (z >= 0) ? "up":"down");
+	  snprintf(buf, 4095, "Pen %s", (z >= 0) ? "up":"down");
+	  debug_out(info, string(buf));
 	  if(z >= 0)
 	       raise_pen();
 	  else
@@ -403,11 +402,16 @@ void gcode::process_line(string input)
 
 	  target = get_target(input, &rem);
 
-	  printf("Cutting from (%f, %f) to (%f, %f)\n",
-		 curr_pos.x, curr_pos.y, target.x, target.y);
+	  snprintf(buf, 4095,
+		   "Cutting from (%f, %f) to (%f, %f)",
+		   curr_pos.x, curr_pos.y, target.x, target.y);
+	  debug_out(info, string(buf));
 	  cutter.cut_to(target);
 	  curr_pos = target;
-	  printf("Current position: %f, %f\n", curr_pos.x, curr_pos.y);
+	  snprintf(buf, 4095,
+		   "Current position: %f, %f",
+		   curr_pos.x, curr_pos.y);
+	  debug_out(debug, string(buf));
      }
      else
      {
@@ -483,7 +487,11 @@ void gcode::process_clockwise_arc(string input)
 	  // final arc segment
 	  arc_segment(cutter, center, arcwidth, radius, srot);
 	  curr_pos = target;
-	  printf("Current position: %f, %f\n", curr_pos.x, curr_pos.y);
+	  char buf[4096];
+	  snprintf(buf, 4095,
+		   "Current position: %f, %f",
+		   curr_pos.x, curr_pos.y);
+	  debug_out(debug, string(buf));
      }
      parse_line(input.substr(rem));
 	  
@@ -499,7 +507,9 @@ void gcode::process_g_code(string input)
      size_t rem = 0;
 
      int code = get_code(input, &rem);
-     printf("Processing G code: %d\n", code);
+     char buf[4096];
+     snprintf(buf, 4095, "Processing G code: %d", code);
+     debug_out(debug, string(buf));
      switch(code)
      {
      case 0:
@@ -522,26 +532,28 @@ void gcode::process_g_code(string input)
 	  break;
      case 20:
 	  // input values are in inches
+	  debug_out(info, "Switching to imperial units");
 	  metric = false;
-	  set_metric(metric);
 	  break;
      case 21:
 	  // input values are in millimeters
+	  debug_out(info, "Switching to metric units");
 	  metric = true;
-	  set_metric(metric);
 	  break;
      case 90:
 	  // values are absolute
+	  debug_out(info, "Using absolute coordinates");
 	  absolute = true;
 	  break;
      case 91:
 	  // values are relative to the current point
 	  // not supported at the moment, so we do nothing
+	  debug_out(info, "Relative coordinates requested but not supported");
 	  break;
      default:
 	  string msg = "Unhandled G command: ";
 	  msg.append(input);
-	  throw msg;
+	  debug_out(info, msg);
 	  break;
      }
      parse_line(input.substr(rem));
@@ -551,7 +563,7 @@ void gcode::process_line_number(string input)
 {
      int offset = 1;
 
-     printf("Skipping line number\n");
+     debug_out(debug, "Skipping line number");
      // skip any white space between the N and the rest of the line
      while(isspace(input[offset]))
 	  offset++;
@@ -569,7 +581,7 @@ void gcode::process_parens(string input)
 {
      int offset = 1;
 
-     printf("Skipping parentheses\n");
+     debug_out(debug, "Skipping parentheses");
      // skip anything not a corresponding ')'
      while(input[offset] != ')')
 	  offset++;
@@ -583,19 +595,22 @@ void gcode::process_misc_code(string input)
      size_t rem = 0;
 
      int code = get_code(input, &rem);
-     printf("Processing M code: %d\n", code);
+     char buf[4096];
+     snprintf(buf, 4095, "Processing M code: %d", code);
+     debug_out(debug, string(buf));
      switch(code)
      {
      case 0:
      case 1:
      case 2:
 	  // stop the program
+	  debug_out(info, "Program halted");
 	  throw false;
 	  break;
      default:
 	  string msg = "Unhandled M command ";
 	  msg.append(input);
-	  throw msg;
+	  debug_out(info, msg);
 	  break;
      }
      
@@ -605,7 +620,9 @@ void gcode::process_misc_code(string input)
 void gcode::parse_line(string input)
 {
      size_t rem = 0;
-     printf("Processing line: %s\n", input.c_str());
+     char buf[4096];
+     snprintf(buf, 4095, "Processing line: %s", input.c_str());
+     debug_out(debug, string(buf));
      if(input[0] == '\n')
 	  throw true;
 
@@ -634,7 +651,7 @@ void gcode::parse_line(string input)
      default:
 	  string msg = "Unhandled command ";
 	  msg.append(input);
-	  throw msg;
+	  debug_out(info, msg);
 	  break;
      }
 }
@@ -643,6 +660,7 @@ void gcode::parse_file(void)
 {
      ifstream infile(filename.c_str());
      string line;
+     char buf[4096];
 
      while(infile)
      {
@@ -653,13 +671,14 @@ void gcode::parse_file(void)
 	  }
 	  catch(string msg)
 	  {
-	       printf("%s\n", msg.c_str());
+	       snprintf(buf, 4095, "%s", msg.c_str());
+	       debug_out(err, string(buf));
 	  }
 	  catch(const std::out_of_range& oor)
 	  {
 	       // sadly, this seems to be the most reliable way to
 	       // tell that we've reached the end of the line
-	       printf("Got out of range error\n");
+	       debug_out(debug, "Got out of range error");
 	  }
 	  catch(bool completed)
 	  {
@@ -669,7 +688,7 @@ void gcode::parse_file(void)
 	       // otherwise the line is done
 	  }
      }
-     printf("Parse complete\n");
+     debug_out(warn, "Parse complete");
      return;
 }
 	  

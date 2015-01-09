@@ -19,16 +19,38 @@ using namespace std;
 
 #include "gcode.hpp"
 
+void usage(char *progname)
+{
+     printf("Usage: %s [-d debug_level] <device file> <gcode file>\n",
+	    progname);
+     printf("%s\n", debug_msg.c_str());
+     exit(1);
+}
+
 int main( int num_args, char * args[] )
 {
-     if( num_args != 3 )
-     {
-	  cout<<"Usage: "<<args[0]<<" /dev/ttyCricut0 gcodefile.gcode"<<endl;
-	  exit(1);
-     }
+     int arg_start = 1;
+     enum debug_prio d = err;
 
-     Device::C cutter( args[1] );
-     gcode parser( args[2], cutter );
+     if( num_args == 5 )
+     {
+	  if(strncmp(args[1], "-d", 2) == 0)
+	  {
+	       d = (enum debug_prio)strtol(args[2], NULL, 10);
+	       printf("Debugging level set to %d\n", d);
+	       arg_start = 3;
+	  }
+	  else
+	       usage(args[0]);
+     }
+     else if( num_args == 3 )
+	  arg_start = 1;
+     else
+	  usage(args[0]);
+
+     Device::C cutter( args[arg_start++] );
+     gcode parser( args[arg_start++], cutter );
+     parser.set_debug(d);
 
      cutter.stop();
      cutter.start();
