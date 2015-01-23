@@ -121,14 +121,6 @@ double arc::angle_between(const xy &vec1, const xy &vec2)
 }
 double arc::get_arcwidth(const xy & vec1, const xy & vec2)
 {
-
-     // this is really quite an odd thing to do, but we need a way to
-     // figure out if the angle between the two vectors is actually
-     // greater than M_PI, since atan2() only returns values between
-     // -M_PI and M_PI. To do this we calculate the angle, and the
-     // angle with vec1 flipped by M_PI degrees (by simply negating
-     // both components).
-
 //     printf("vec1: (%f, %f); vec2: (%f, %f)\n",vec1.x, vec1.y,
 //	    vec2.x, vec2.y);
      double a1 = atan2(vec2.y, vec2.x) - atan2(vec1.y, vec1.x);
