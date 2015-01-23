@@ -33,8 +33,8 @@
 #define DPI_X 100
 #define DPI_Y 100
 
-#define DEFAULT_SIZE_X 6
-#define DEFAULT_SIZE_Y 6
+#define DEFAULT_SIZE_X 12
+#define DEFAULT_SIZE_Y 12
 
 #define WIDTH  ( ( DPI_X ) * ( DEFAULT_SIZE_X ) )
 #define HEIGHT ( ( DPI_Y ) * ( DEFAULT_SIZE_Y ) )
@@ -80,7 +80,7 @@ namespace Device
         xy external_cur_posn = convert_to_external( current_position );
 
         double distance = sqrt( ( external_cur_posn.x - aPoint.x ) * ( external_cur_posn.x - aPoint.x ) +
-                                ( external_cur_posn.y - aPoint.y ) * ( external_cur_posn.y - aPoint.y ) );
+            ( external_cur_posn.y - aPoint.y ) * ( external_cur_posn.y - aPoint.y ) );
 
         if( !running )
         {
@@ -145,7 +145,7 @@ namespace Device
         #undef X
         #undef Y
         #undef NUM_FACT
-        #undef NUM_DUM
+        #undef NUM_DIM
         #undef NUM_SECTIONS_PER_CURVE
     }
 
