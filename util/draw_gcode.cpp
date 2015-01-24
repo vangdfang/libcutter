@@ -4,45 +4,69 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 #include <cstring>
 #include "device_c.hpp"
 #include "keys.h"
 
 using namespace std;
 
-//DEBUG LEVELS:
-//0 - No debug output
-//1 - StringConversion
-//2 - Each line of GCODE as parsed
-#define DEBUG 0
+#include "gcode.hpp"
 
-#include "gcode_common.h"
+void usage(char *progname)
+{
+     printf("Usage: %s [-d debug_level] <device file> <gcode file>\n",
+	    progname);
+     printf("%s\n", debug_msg.c_str());
+     exit(1);
+}
 
 int main( int num_args, char * args[] )
 {
-if( num_args != 3 )
-	{
-	cout<<"Usage: "<<args[0]<<" /dev/ttyCricut0 gcodefile.gcode"<<endl;
-	exit(1);
-	}
+     int arg_start = 1;
+     enum debug_prio d = err;
 
-Device::C cutter( args[1] );
+     if( num_args == 5 )
+     {
+	  if(strncmp(args[1], "-d", 2) == 0)
+	  {
+	       d = (enum debug_prio)strtol(args[2], NULL, 10);
+	       arg_start = 3;
+	  }
+	  else
+	       usage(args[0]);
+     }
+     else if( num_args == 3 )
+	  arg_start = 1;
+     else
+	  usage(args[0]);
 
-cutter.stop();
-cutter.start();
+     Device::C cutter( args[arg_start++] );
+     gcode parser( args[arg_start++], cutter );
+     gcode_base::set_debug(d);
 
-ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
-cutter.set_move_key(move_key);
+     cutter.stop();
+     cutter.start();
 
-ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
-cutter.set_line_key(line_key);
+     ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
+     cutter.set_move_key(move_key);
 
-ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
-cutter.set_curve_key(curve_key);
+     ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
+     cutter.set_line_key(line_key);
 
-parse_gcode( args[2], cutter );
+     ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
+     cutter.set_curve_key(curve_key);
 
-cutter.stop();
+     try
+     {
+	       parser.parse_file();
+     }
+     catch(...)
+     {
+	  printf("Unhandled exception");
+     }
 
-return 0;
+     cutter.stop();
+
+     return 0;
 }
