@@ -1,9 +1,4 @@
 Serial communications and a simple test application for interfacing with cutters.
 
-Film at 11.
-
-Suggested bcpp command:
-bcpp -s -f 2 -i 4 -bnl -fi $in -fo $out
-
-To build for win32, you first need MinGW (look at the mingw32 packages on Debian).
-./build-win32.sh has a sample for how to build the system.
+Windows and MacOSX DLL wrapper for libcutter to add as a plugin for Sure Cuts A Lot 4 using the SCAL4 Custom Plugin spec
+http://www.craftedge.com/tutorials/cut_plugin/cut_plugin.php
