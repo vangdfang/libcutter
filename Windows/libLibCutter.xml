@@ -1,0 +1,6 @@
+<xml version="1.0" encoding="UTF-8">
+    <scal_cut_plugin name="Cricut" model="Personal/Expression/Create" dll="LibCutterPlugin.dll" origin="TR">
+        <connection type="usb"/>
+        <connection type="serial"/>
+    </scal_cut_plugin>
+</xml>
