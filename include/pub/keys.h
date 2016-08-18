@@ -1,5 +1,5 @@
 #ifndef KEYS_H
-#warning Keys must be defined!
+//#warning Keys must be defined!
 #define MOVE_KEY_0   0ul
 #define MOVE_KEY_1   1ul
 #define MOVE_KEY_2   2ul
