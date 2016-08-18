@@ -31,7 +31,9 @@
 
 static inline uint32_t htocl( const uint32_t input );
 
-struct __attribute__(( packed )) lmc_command
+//struct __attribute__(( packed )) lmc_command
+#pragma pack(1)
+struct lmc_command
 {
     uint8_t  bytes;
     uint8_t  cmd;

@@ -26,8 +26,8 @@
 #include <cstdio>
 #include <sys/types.h>
 #include <cstdlib>
-#include <sys/time.h>
-#include <unistd.h>
+//#include <sys/time.h>
+//#include <unistd.h>
 #include <cmath>
 #include <string>
 #include <windows.h>
@@ -154,14 +154,14 @@ size_t serial_port::p_read( uint8_t * data, size_t size )
     return bytesRead;
 }
 
-
+/*
 const uint64_t serial_port::getTime( void )
 {
     timeval tv;
     gettimeofday( &tv, NULL );
     return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
 }
-
+*/
 
 int serial_port::delay( int usecs )
 {
