@@ -14,15 +14,6 @@
 using namespace std;
 using namespace gcode_base;
 
-static const char *debug_strings[] = {
-     "critical",
-     "error",
-     "warning",
-     "information",
-     "debug",
-     "extra_debug"
-};
-
 static enum debug_prio _debug;
 
 void gcode_base::debug_out(enum debug_prio debug_level, const string msg)
@@ -33,13 +24,16 @@ void gcode_base::debug_out(enum debug_prio debug_level, const string msg)
 
 void gcode_base::set_debug(enum debug_prio d)
 {
-     char buf[256];
+     static const char * const debug_strings[] = {
+          "critical",
+          "error",
+          "warning",
+          "information",
+          "debug",
+          "extra_debug"
+     };
 
-     _debug = d;
-     snprintf(buf, sizeof(buf),
-	      "Debugging level set to %s\n",
-	      debug_strings[_debug]);
-     debug_out(info, string(buf));
+     debug_out(info, string("Debugging level set to ")+debug_strings[_debug=d]+"\n");
 }
 
 line::line(const xy &s, const xy &e, const bool c):
@@ -115,9 +109,7 @@ xy bezier::draw(Device::Generic &cutter)
 
 double arc::angle_between(const xy &vec1, const xy &vec2)
 {
-     double angle = atan2(vec2.y, vec2.x) - atan2(vec1.y, vec1.x);
-
-     return angle;
+     return atan2(vec2.y, vec2.x) - atan2(vec1.y, vec1.x);
 }
 double arc::get_arcwidth(const xy & vec1, const xy & vec2)
 {
@@ -735,7 +727,7 @@ void gcode::process_misc_code(string input)
 
      int code = get_code(input, &rem);
      char buf[4096];
-     snprintf(buf, 4095, "Processing M code: %d", code);
+     snprintf(buf, sizeof(buf), "Processing M code: %d", code);
      debug_out(debug, string(buf));
      switch(code)
      {
@@ -759,9 +751,7 @@ void gcode::process_misc_code(string input)
 void gcode::parse_line(string input)
 {
      size_t rem = 0;
-     char buf[4096];
-     snprintf(buf, 4095, "Processing line: %s", input.c_str());
-     debug_out(extra_debug, string(buf));
+     debug_out(extra_debug, string("Processing line: ")+input);
      if(input[0] == '\n')
 	  throw true;
 
@@ -814,7 +804,7 @@ void gcode::parse_file(void)
 	  }
 	  catch(string msg)
 	  {
-	       snprintf(buf, 4095, "%s", msg.c_str());
+	       snprintf(buf, sizeof(buf), "%s", msg.c_str());
 	       debug_out(err, string(buf));
 	  }
 	  catch(const std::out_of_range& oor)
