@@ -105,6 +105,7 @@ class gcode
      void process_clockwise_arc(string);
      void process_anticlockwise_arc(string);
      void process_g_code(string);
+     void process_z_command(string input, size_t * remainder );
      void process_line_number(string);
      void process_parens(string);
      void process_misc_code(string);

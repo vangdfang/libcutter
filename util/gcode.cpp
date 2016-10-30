@@ -487,14 +487,7 @@ void gcode::process_movement(string input)
      char command = get_command(input, &rem);
      if(command == 'Z')
      {
-          char buf[4096];
-	  double z = get_value(input.substr(rem), &rem);
-	  snprintf(buf, sizeof(buf), "Pen %s", (z >= 0) ? "up":"down");
-	  debug_out(debug, string(buf));
-	  if(z >= 0)
-	       raise_pen();
-	  else
-	       lower_pen();
+          process_z_command(input.substr(rem), &rem);
      }
      else if(command == 'X')
      {
@@ -524,15 +517,8 @@ void gcode::process_line(string input)
      offset += rem;
      if(command == 'Z')
      {
-	  double z = get_value(input.substr(rem), &rem);
-	  offset += rem;
-          char buf[4096];
-	  snprintf(buf, sizeof(buf), "Pen %s", (z >= 0) ? "up":"down");
-	  debug_out(debug, string(buf));
-	  if(z >= 0)
-	       raise_pen();
-	  else
-	       lower_pen();
+          process_z_command(input.substr(rem), &rem);
+          offset += rem;
      }
      else if(command == 'X')
      {
@@ -566,9 +552,8 @@ void gcode::process_clockwise_arc(string input)
      offset += rem;
      if(command == 'Z')
      {
-	  string msg = "Unexpected Z command: ";
-	  msg.append(input);
-	  throw msg;
+          process_z_command(input.substr(rem), &rem);
+          offset += rem;
      }
      else if(command == 'X')
      {
@@ -600,9 +585,8 @@ void gcode::process_anticlockwise_arc(string input)
     offset += rem;
     if(command == 'Z')
     {
-	 string msg = "Unexpected Z command: ";
-	 msg.append(input);
-	 throw msg;
+          process_z_command(input.substr(rem), &rem);
+          offset += rem;
     }
     else if(command == 'X')
     {
@@ -674,6 +658,18 @@ void gcode::process_g_code(string input)
 	  break;
      }
      parse_line(input.substr(rem));
+}
+
+void gcode::process_z_command(string input, size_t * remainder )
+{
+     double z = get_value(input, remainder);
+     char buf[4096];
+     snprintf(buf, sizeof(buf), "Pen %s", (z >= 0) ? "up":"down");
+     debug_out(debug, string(buf));
+     if(z >= 0)
+          raise_pen();
+     else
+          lower_pen();
 }
 
 void gcode::process_line_number(string input)
