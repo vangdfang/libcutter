@@ -231,7 +231,7 @@ xy arc::draw(Device::Generic &cutter)
 void arc::segment(double swidth, double rot)
 {
      char buf[4096];
-     snprintf(buf, 4095,
+     snprintf(buf, sizeof(buf),
 	      "Arc segment: center (%f, %f), arc width: %f, radius %f, rotation: %f",
 	      center.x, center.y, swidth/M_PI, radius, rot/M_PI);
      debug_out(debug, string(buf));
@@ -387,36 +387,29 @@ double gcode::doc_to_internal(double val)
 char gcode::get_command(const string & input, size_t *rem)
 {
      int offset = 0;
-     char command;
 
      while(isspace(input[offset]))
 	  offset++;
-     command = input[offset];
      *rem = offset + 1;
 
-     return command;
+     return input[offset];
 }
 
 int gcode::get_code(const string & input, size_t *rem)
 {
      char *end;
-     const char *tmp;
-     int retval;
-
-     tmp = input.c_str();
-     retval = strtol(tmp, &end, 10);
+     const char * tmp = input.c_str();
+     int retval = strtol(tmp, &end, 10);
      *rem = (end - tmp) + 1;
      return retval;
 }
 
 double gcode::get_value(const string & input, size_t *rem)
 {
-     char *end;
-     const char *tmp;
-     double retval;
 
-     tmp = input.c_str();
-     retval = strtod(tmp, &end);
+     char *end;
+     const char * tmp = input.c_str();
+     double retval = strtod(tmp, &end);
      retval = doc_to_internal(retval);
      *rem = (end - tmp) + 1;
      return retval;
@@ -426,11 +419,9 @@ xy gcode::get_xy(const string & input, size_t *rem)
 {
      size_t tmp;
      size_t offset = 0;
-     char command;
      xy target;
-     double x, y;
 
-     command = get_command(input, &tmp);
+     char command = get_command(input, &tmp);
      offset += tmp;
      if(command != 'X' && command != 'I')
      {
@@ -438,7 +429,7 @@ xy gcode::get_xy(const string & input, size_t *rem)
 	  msg.append(input);
 	  throw msg;
      }
-     x = get_value(input.substr(offset), &tmp);
+     double x = get_value(input.substr(offset), &tmp);
      offset += tmp;
      command = get_command(input.substr(offset), &tmp);
      offset += tmp;
@@ -448,7 +439,7 @@ xy gcode::get_xy(const string & input, size_t *rem)
 	  msg.append(input.substr(offset));
 	  throw msg;
      }
-     y = get_value(input.substr(offset), &tmp);
+     double y = get_value(input.substr(offset), &tmp);
      offset += tmp;
      *rem = offset;
      target.x = x;
@@ -458,11 +449,10 @@ xy gcode::get_xy(const string & input, size_t *rem)
 
 xy gcode::get_vector(const string input, size_t *rem)
 {
-     char command;
      size_t offset = 0;
      size_t tmp;
 
-     command = get_command(input, &tmp);
+     char command = get_command(input, &tmp);
      offset += tmp;
      if(command == 'I')
      {
@@ -493,14 +483,13 @@ void gcode::process_movement(string input)
      // rapid movement to target point
      //
      size_t rem = 0;
-     char command;
-     char buf[4096];
 
-     command = get_command(input, &rem);
+     char command = get_command(input, &rem);
      if(command == 'Z')
      {
+          char buf[4096];
 	  double z = get_value(input.substr(rem), &rem);
-	  snprintf(buf, 4095, "Pen %s", (z >= 0) ? "up":"down");
+	  snprintf(buf, sizeof(buf), "Pen %s", (z >= 0) ? "up":"down");
 	  debug_out(debug, string(buf));
 	  if(z >= 0)
 	       raise_pen();
@@ -530,16 +519,15 @@ void gcode::process_line(string input)
 
      size_t offset = 0;
      size_t rem;
-     char command;
-     char buf[4096];
 
-     command = get_command(input, &rem);
+     char command = get_command(input, &rem);
      offset += rem;
      if(command == 'Z')
      {
 	  double z = get_value(input.substr(rem), &rem);
 	  offset += rem;
-	  snprintf(buf, 4095, "Pen %s", (z >= 0) ? "up":"down");
+          char buf[4096];
+	  snprintf(buf, sizeof(buf), "Pen %s", (z >= 0) ? "up":"down");
 	  debug_out(debug, string(buf));
 	  if(z >= 0)
 	       raise_pen();
@@ -634,18 +622,16 @@ void gcode::process_anticlockwise_arc(string input)
 
 void gcode::process_g_code(string input)
 {
-     string val;
      size_t rem = 0;
 
      int code = get_code(input, &rem);
      char buf[4096];
-     snprintf(buf, 4095, "Processing G code: %d", code);
+     snprintf(buf, sizeof(buf), "Processing G code: %d", code);
      debug_out(debug, string(buf));
      switch(code)
      {
      case 0:
 	  // rapid movement to target point
-	  //
 	  process_movement(input.substr(rem));
 	  break;
      case 1:
@@ -793,7 +779,6 @@ void gcode::parse_file(void)
 {
      ifstream infile(filename.c_str());
      string line;
-     char buf[4096];
 
      while(infile)
      {
@@ -804,6 +789,7 @@ void gcode::parse_file(void)
 	  }
 	  catch(string msg)
 	  {
+               char buf[4096];
 	       snprintf(buf, sizeof(buf), "%s", msg.c_str());
 	       debug_out(err, string(buf));
 	  }
