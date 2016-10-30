@@ -34,12 +34,12 @@ void gcode_base::debug_out(enum debug_prio debug_level, const string msg)
 void gcode_base::set_debug(enum debug_prio d)
 {
      char buf[256];
-     
+
      _debug = d;
      snprintf(buf, sizeof(buf),
 	      "Debugging level set to %s\n",
 	      debug_strings[_debug]);
-     debug_out(info, string(buf));     
+     debug_out(info, string(buf));
 }
 
 line::line(const xy &s, const xy &e, const bool c):
@@ -79,7 +79,7 @@ xy line::draw(Device::Generic &cutter)
      debug_out(debug, string(buf));
      return end;
 }
-     
+
 bezier::bezier(const xy &s, const xy &c1, const xy &c2, const xy &e):
      start(s),
      cp1(c1),
@@ -125,7 +125,7 @@ double arc::get_arcwidth(const xy & vec1, const xy & vec2)
 //	    vec2.x, vec2.y);
      double a1 = atan2(vec2.y, vec2.x) - atan2(vec1.y, vec1.x);
 //     printf("Arcwidth: %f", a1/M_PI);
-     
+
      if (clockwise)
      {
 //	  printf(" (clockwise) ");
@@ -428,8 +428,8 @@ double gcode::get_value(const string & input, size_t *rem)
      retval = doc_to_internal(retval);
      *rem = (end - tmp) + 1;
      return retval;
-}     
-	  
+}
+
 xy gcode::get_xy(const string & input, size_t *rem)
 {
      size_t tmp;
@@ -503,7 +503,7 @@ void gcode::process_movement(string input)
      size_t rem = 0;
      char command;
      char buf[4096];
-     
+
      command = get_command(input, &rem);
      if(command == 'Z')
      {
@@ -581,7 +581,7 @@ void gcode::process_clockwise_arc(string input)
      size_t offset = 0;
      size_t rem;
      char command;
-     
+
      command = get_command(input, &rem);
      offset += rem;
      if(command == 'Z')
@@ -593,7 +593,7 @@ void gcode::process_clockwise_arc(string input)
      else if(command == 'X')
      {
 	  xy target, cvec;
-	  
+
 	  debug_out(debug, "Processing clockwise arc");
 	  target = get_target(input, &rem);
 	  offset += rem;
@@ -604,7 +604,6 @@ void gcode::process_clockwise_arc(string input)
 	  curr_pos = a->draw(cutter);
      }
      parse_line(input.substr(offset));
-	  
 }
 
 void gcode::process_anticlockwise_arc(string input)
@@ -753,7 +752,7 @@ void gcode::process_misc_code(string input)
 	  debug_out(debug, msg);
 	  break;
      }
-     
+
      parse_line(input.substr(rem));
 }
 
@@ -835,4 +834,3 @@ void gcode::parse_file(void)
      debug_out(info, "Parse complete");
      return;
 }
-	  
