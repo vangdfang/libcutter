@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include <string>
+#include <map>
 #include "device.hpp"
 #include "types.h"
 
@@ -90,25 +91,23 @@ public:
 class gcode
 {
      // parse methods
+     static std::map<char,float> parse_gcode( std::string line );
      double doc_to_internal(double);
-     char get_command(const string &, size_t *);
-     int get_code(const string &, size_t *);
-     double get_value(const string &, size_t *);
-     xy get_xy(const string &, size_t *);
-     xy get_vector(const string, size_t *);
-     xy get_target(const string, size_t *);
+     xy get_xy(std::map<char,float> &);
+     xy get_vector(std::map<char,float> &);
+     xy get_target(std::map<char,float> &);
 
      // private stuff - methods so that they can access the private
      // methods and members
-     void process_movement(string);
-     void process_line(string);
-     void process_clockwise_arc(string);
-     void process_anticlockwise_arc(string);
-     void process_g_code(string);
-     void process_z_command(string input, size_t * remainder );
-     void process_line_number(string);
-     void process_parens(string);
-     void process_misc_code(string);
+     void process_movement(std::map<char,float> &);
+     void process_line(std::map<char,float> &);
+     void process_clockwise_arc(std::map<char,float> &);
+     void process_anticlockwise_arc(std::map<char,float> &);
+     void process_g_code(std::map<char,float> &);
+     void process_z_code(std::map<char,float> &);
+     void process_line_number(std::map<char,float> &);
+     void process_parens(std::map<char,float> &);
+     void process_misc_code(std::map<char,float> &);
 
      inline void raise_pen(void)
 	  {
