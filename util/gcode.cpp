@@ -34,7 +34,12 @@ void gcode_base::set_debug(enum debug_prio d)
           "extra_debug"
      };
 
-     debug_out(info, string("Debugging level set to ")+debug_strings[_debug=d]+"\n");
+     if( d > extra_debug ) {
+          _debug = extra_debug;
+          debug_out(info, string("Debugging level set to maximum\n"));
+     } else {
+          debug_out(info, string("Debugging level set to ")+debug_strings[_debug=d]+"\n");
+     }
 }
 
 line::line(const xy &s, const xy &e, const bool c):
