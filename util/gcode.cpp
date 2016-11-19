@@ -478,7 +478,7 @@ void gcode::process_g_code(std::map<char,float> & codes)
 
      char buf[4096];
      int code = (int)(codes['G']+.5);
-     snprintf(buf, 4095, "Processing G code: %d", code);
+     snprintf(buf, sizeof(buf), "Processing G code: %d", code);
      debug_out(debug, string(buf));
      switch(code)
      {
@@ -520,9 +520,8 @@ void gcode::process_g_code(std::map<char,float> & codes)
 	  debug_out(info, "Relative coordinates requested but not supported");
 	  break;
      default:
-	  string msg = "Unhandled G command: ";
-	  msg.append(to_string(code));
-	  debug_out(debug, msg);
+	  snprintf(buf, sizeof(buf), "Unhandled G command: %d", code);
+	  debug_out(debug, string(buf));
 	  break;
      }
 }
@@ -549,9 +548,8 @@ void gcode::process_misc_code(std::map<char,float> & codes)
 	  throw false;
 	  break;
      default:
-	  string msg = "Unhandled M command ";
-	  msg.append(to_string(code));
-	  debug_out(debug, msg);
+	  snprintf(buf, sizeof(buf), "Unhandled M command %d", code);
+	  debug_out(debug, string(buf));
 	  break;
      }
 
