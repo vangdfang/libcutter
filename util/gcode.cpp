@@ -392,14 +392,19 @@ double gcode::doc_to_internal(double val)
 
 xy gcode::get_xy(std::map<char,float> & codes)
 {
-	return xy( codes['X'], codes['Y'] );
-     xy target = { codes['X'], codes['Y'] };
+	xy retn = curr_pos;
+	if( codes.find('X') != codes.end() ) {
+		retn.x = doc_to_internal(codes['X']);
+	}
+	if( codes.find('Y') != codes.end() ) {
+		retn.y = doc_to_internal(codes['Y']);
+	}
+	return retn;
 }
 
 xy gcode::get_vector(std::map<char,float> & codes)
 {
-	xy t = { codes['I'], codes['J'] };
-	return t;
+	return (xy){ doc_to_internal(codes['I']), doc_to_internal(codes['J']) };
 }
 
 void gcode::process_movement(std::map<char,float> & codes)
@@ -416,7 +421,7 @@ void gcode::process_z_code(std::map<char,float> & codes)
      if ( codes.find('Z') != codes.end() )
      {
       char buf[4096];
-	  double z = codes['Z'];
+	  double z = doc_to_internal(codes['Z']);
 	  snprintf(buf, 4095, "Pen %s", (z >= 0) ? "up":"down");
 	  debug_out(debug, string(buf));
 	  if(z >= 0)
@@ -431,9 +436,7 @@ void gcode::process_line(std::map<char,float> & codes)
      // cut from curr_pos to target_point
 
      process_z_code(codes);
-     xy target;
-
-     target = get_xy(codes);
+     xy target = get_xy(codes);
      line *l = new line(curr_pos, target, true);
      curr_pos = l->draw(cutter);
 }
@@ -602,11 +605,11 @@ void gcode::parse_line(string input)
      debug_out(extra_debug, string("Processing line: ")+input);
      std::map<char,float> codes = parse_gcode( input );
 
-     if ( codes.find('G') == codes.end() ) {
+     if ( codes.find('G') != codes.end() ) {
           process_g_code(codes);
-     } else if ( codes.find('N') == codes.end() ) {
+     } else if ( codes.find('N') != codes.end() ) {
           process_line_number(codes);
-     } else if ( codes.find('M') == codes.end() ) {
+     } else if ( codes.find('M') != codes.end() ) {
           process_misc_code(codes);
      } else {
 	  string msg = "Unhandled command ";
