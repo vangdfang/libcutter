@@ -44,7 +44,7 @@ LaunchOptions parseArgs(int num_args, char * args[])
      while (i < num_args) 
      {
           auto currentArg = string(args[i]);
-          bool hasParsedDeviceFile = options.device_file.has_value();
+          const bool hasParsedDeviceFile = options.device_file.has_value();
 
           if (currentArg == "-d")
           {
