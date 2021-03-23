@@ -1,5 +1,9 @@
 #ifndef KEYS_H
-#warning Keys must be defined!
+
+// Remove this block when adding keys
+#define NO_COMPILE_TIME_KEYS
+// End block
+
 #define MOVE_KEY_0   0ul
 #define MOVE_KEY_1   1ul
 #define MOVE_KEY_2   2ul

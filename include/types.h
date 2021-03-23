@@ -36,5 +36,6 @@ struct xy
 	~xy(){};
 };
 
-typedef uint32_t ckey_type[4];
+typedef uint32_t individual_key_t;
+typedef individual_key_t ckey_type[4];
 #endif
