@@ -44,27 +44,30 @@ LaunchOptions parseArgs(int num_args, char * args[])
      while (i < num_args) 
      {
           auto currentArg = string(args[i]);
+          bool hasParsedDeviceFile = options.device_file.has_value();
 
-          if (currentArg == "-d") {
+          if (currentArg == "-d")
+          {
                // The next argument is the debug level.
                options.debug_priority = (enum debug_prio)strtol(args[i + 1], NULL, 10);
                i += 2;
                break;
           }
-          if (currentArg == "--mk0") {
+          else if (currentArg == "--mk0")
+          {
                // The next argument is the move key
                options.moveKey0 = stoi(args[i + 1], nullptr /* idx */, 16 /* base */);
                i += 2;
                break;
           }
-          else if (i == num_args - 2)
+          else if (!hasParsedDeviceFile)
           {
-               // Second-to-last argument is always device file
+               // First bare argument should be device file.
                options.device_file = currentArg;
           }
-          else if (i == num_args - 1)
+          else if (hasParsedDeviceFile)
           {
-               // Last argument is always device file
+               // Second bare argument should be gcode file.
                options.gcode_file = currentArg;
           }
 
