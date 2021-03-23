@@ -8,8 +8,8 @@ option(SERIAL_PORT_DEBUG_MODE "Serial debugging" ON)
 set(CMAKE_CXX_FLAGS "-g -Wall")
 set(CMAKE_C_FLAGS "-g -Wall")
 
-# Use C++11 at least
-set(CMAKE_CXX_STANDARD 11)
+# Use C++17 at least
+set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(lib)
 add_subdirectory(util)

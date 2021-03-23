@@ -2,6 +2,8 @@
 
 #include <cmath>
 #include <vector>
+#include <string>
+#include <optional>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -15,35 +17,63 @@ using namespace std;
 
 void usage(char *progname)
 {
-     printf("Usage: %s [-d debug_level] <device file> <gcode file>\n",
+     printf("Usage: %s -mk0 <move key 0> [-d debug_level] <device file> <gcode file>\n",
 	    progname);
+     cout << "\tkeys - should point to a JSON file containing the movement keys for the machine" << endl;
      printf("%s\n", debug_msg.c_str());
      exit(1);
 }
 
+struct LaunchOptions {
+     debug_prio debug_priority = err;
+     optional<string> device_file = nullopt;
+     optional<string> gcode_file = nullopt;
+};
+
+LaunchOptions parseArgs(int num_args, char * args[])
+{
+     LaunchOptions options{};
+
+     // Arguments should start after the command line (args[0]).
+     int i = 1;
+     while (i < num_args) 
+     {
+          auto currentArg = string(args[i]);
+
+          if (currentArg == "-d") {
+               // The next argument is the debug level.
+               options.debug_priority = (enum debug_prio)strtol(args[i + 1], NULL, 10);
+               i += 2;
+               break;
+          }
+          else if (i == num_args - 2)
+          {
+               // Second-to-last argument is always device file
+               options.device_file = currentArg;
+          }
+          else if (i == num_args - 1)
+          {
+               // Last argument is always device file
+               options.gcode_file = currentArg;
+          }
+
+          // Parse the next arg.
+          i++;
+     }
+
+     return options;
+}
+
 int main( int num_args, char * args[] )
 {
-     int arg_start = 1;
-     enum debug_prio d = err;
-
-     if( num_args == 5 )
-     {
-	  if(strncmp(args[1], "-d", 2) == 0)
-	  {
-	       d = (enum debug_prio)strtol(args[2], NULL, 10);
-	       arg_start = 3;
-	  }
-	  else
-	       usage(args[0]);
+     const auto launchOptions = parseArgs(num_args, args);
+     if (!launchOptions.device_file || !launchOptions.gcode_file) {
+          usage(args[0]);
      }
-     else if( num_args == 3 )
-	  arg_start = 1;
-     else
-	  usage(args[0]);
 
-     Device::C cutter( args[arg_start++] );
-     gcode parser( args[arg_start++], cutter );
-     gcode_base::set_debug(d);
+     Device::C cutter(*launchOptions.device_file);
+     gcode parser(*launchOptions.gcode_file, cutter);
+     gcode_base::set_debug(launchOptions.debug_priority);
 
      cutter.stop();
      cutter.start();
