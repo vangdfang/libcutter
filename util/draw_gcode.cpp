@@ -43,7 +43,7 @@ LaunchOptions parseArgs(int num_args, char * args[])
      int i = 1;
      while (i < num_args) 
      {
-          auto currentArg = string(args[i]);
+          const auto currentArg = string(args[i]);
           const bool hasParsedDeviceFile = options.device_file.has_value();
 
           if (currentArg == "-d")
@@ -51,7 +51,7 @@ LaunchOptions parseArgs(int num_args, char * args[])
                // The next argument is the debug level.
                options.debug_priority = (enum debug_prio)strtol(args[i + 1], NULL, 10);
                i += 2;
-               break;
+               continue;
           }
           else if (currentArg == "--mk")
           {
@@ -59,12 +59,12 @@ LaunchOptions parseArgs(int num_args, char * args[])
                     throw runtime_error("Not enough arguments; expected 4 keys.");
                }
                // The next 4 argument are the move keys
-               options.moveKey0 = stoi(args[i + 1], nullptr /* idx */, 16 /* base */);
-               options.moveKey1 = stoi(args[i + 2], nullptr /* idx */, 16 /* base */);
-               options.moveKey2 = stoi(args[i + 3], nullptr /* idx */, 16 /* base */);
-               options.moveKey3 = stoi(args[i + 4], nullptr /* idx */, 16 /* base */);
+               options.moveKey0 = stoul(args[i + 1], nullptr /* idx */, 16 /* base */);
+               options.moveKey1 = stoul(args[i + 2], nullptr /* idx */, 16 /* base */);
+               options.moveKey2 = stoul(args[i + 3], nullptr /* idx */, 16 /* base */);
+               options.moveKey3 = stoul(args[i + 4], nullptr /* idx */, 16 /* base */);
                i += 5;
-               break;
+               continue;
           }
           else if (!hasParsedDeviceFile)
           {
@@ -89,6 +89,11 @@ int main( int num_args, char * args[] )
      const auto launchOptions = parseArgs(num_args, args);
      if (!launchOptions.device_file || !launchOptions.gcode_file)
      {
+          cerr << "Please provide a device file and GCode file" << endl;
+          cerr << endl;
+          cerr << "Provided device: " << launchOptions.device_file.value_or("(missing)") << endl;
+          cerr << "Provided GCode: " << launchOptions.gcode_file.value_or("(missing)") << endl;
+          cerr << endl;
           usage(args[0]);
      }
 
