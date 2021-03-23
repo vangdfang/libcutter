@@ -17,9 +17,11 @@ using namespace std;
 
 void usage(char *progname)
 {
-     printf("Usage: %s --mk <move keys (separated by spaces)> [-d debug_level] <device file> <gcode file>\n",
+     printf("Usage: %s <device file> <gcode file> --mk <move keys (separated by spaces)> --lk <line keys (separated by spaces)>  --ck <line keys (separated by spaces)> [-d debug_level]\n",
 	    progname);
      cout << "\t--mk - 4 move keys, separated by spaces, like this: `--mk 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
+     cout << "\t--lk - 4 line keys, separated by spaces, like this: `--lk 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
+     cout << "\t--ck - 4 curve keys, separated by spaces, like this: `--ck 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
      printf("%s\n", debug_msg.c_str());
      exit(1);
 }
@@ -33,6 +35,16 @@ struct LaunchOptions {
      optional<individual_key_t> moveKey1{};
      optional<individual_key_t> moveKey2{};
      optional<individual_key_t> moveKey3{};
+
+     optional<individual_key_t> lineKey0{};
+     optional<individual_key_t> lineKey1{};
+     optional<individual_key_t> lineKey2{};
+     optional<individual_key_t> lineKey3{};
+
+     optional<individual_key_t> curveKey0{};
+     optional<individual_key_t> curveKey1{};
+     optional<individual_key_t> curveKey2{};
+     optional<individual_key_t> curveKey3{};
 };
 
 LaunchOptions parseArgs(int num_args, char * args[])
@@ -63,6 +75,32 @@ LaunchOptions parseArgs(int num_args, char * args[])
                options.moveKey1 = stoul(args[i + 2], nullptr /* idx */, 16 /* base */);
                options.moveKey2 = stoul(args[i + 3], nullptr /* idx */, 16 /* base */);
                options.moveKey3 = stoul(args[i + 4], nullptr /* idx */, 16 /* base */);
+               i += 5;
+               continue;
+          }
+          else if (currentArg == "--lk")
+          {
+               if (num_args - i < 5) {
+                    throw runtime_error("Not enough arguments; expected 4 keys.");
+               }
+               // The next 4 argument are the move keys
+               options.lineKey0 = stoul(args[i + 1], nullptr /* idx */, 16 /* base */);
+               options.lineKey1 = stoul(args[i + 2], nullptr /* idx */, 16 /* base */);
+               options.lineKey2 = stoul(args[i + 3], nullptr /* idx */, 16 /* base */);
+               options.lineKey3 = stoul(args[i + 4], nullptr /* idx */, 16 /* base */);
+               i += 5;
+               continue;
+          }
+          else if (currentArg == "--ck")
+          {
+               if (num_args - i < 5) {
+                    throw runtime_error("Not enough arguments; expected 4 keys.");
+               }
+               // The next 4 argument are the move keys
+               options.curveKey0 = stoul(args[i + 1], nullptr /* idx */, 16 /* base */);
+               options.curveKey1 = stoul(args[i + 2], nullptr /* idx */, 16 /* base */);
+               options.curveKey2 = stoul(args[i + 3], nullptr /* idx */, 16 /* base */);
+               options.curveKey3 = stoul(args[i + 4], nullptr /* idx */, 16 /* base */);
                i += 5;
                continue;
           }
@@ -116,9 +154,43 @@ int main( int num_args, char * args[] )
                usage(args[0]);
           }
 
+          if (!launchOptions.lineKey0 ||
+               !launchOptions.lineKey1 ||
+               !launchOptions.lineKey2 ||
+               !launchOptions.lineKey3)
+          {
+               cerr << "Not all line keys were provided (did you provide 4 keys with `--lk`?)" << endl;
+               cerr << endl;
+               cerr << "Provided: "
+                    << launchOptions.lineKey0.value_or(0ul) << " "
+                    << launchOptions.lineKey1.value_or(0ul) << " "
+                    << launchOptions.lineKey2.value_or(0ul) << " "
+                    << launchOptions.lineKey3.value_or(0ul) << " "
+                    << endl;
+               cerr << endl;
+               usage(args[0]);
+          }
+
+          if (!launchOptions.curveKey0 ||
+               !launchOptions.curveKey1 ||
+               !launchOptions.curveKey2 ||
+               !launchOptions.curveKey3)
+          {
+               cerr << "Not all curve keys were provided (did you provide 4 keys with `--ck`?)" << endl;
+               cerr << endl;
+               cerr << "Provided: "
+                    << launchOptions.curveKey0.value_or(0ul) << " "
+                    << launchOptions.curveKey1.value_or(0ul) << " "
+                    << launchOptions.curveKey2.value_or(0ul) << " "
+                    << launchOptions.curveKey3.value_or(0ul) << " "
+                    << endl;
+               cerr << endl;
+               usage(args[0]);
+          }
+
           ckey_type move_key={*launchOptions.moveKey0, *launchOptions.moveKey1, *launchOptions.moveKey2, *launchOptions.moveKey3 };
-          ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
-          ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
+          ckey_type line_key={*launchOptions.lineKey0, *launchOptions.lineKey1, *launchOptions.lineKey2, *launchOptions.lineKey3 };
+          ckey_type curve_key={*launchOptions.curveKey0, *launchOptions.curveKey1, *launchOptions.curveKey2, *launchOptions.curveKey3 };
      #else
           ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
           ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
