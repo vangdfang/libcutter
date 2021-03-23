@@ -17,9 +17,9 @@ using namespace std;
 
 void usage(char *progname)
 {
-     printf("Usage: %s --mk0 <move key 0> [-d debug_level] <device file> <gcode file>\n",
+     printf("Usage: %s --mk <move keys (separated by spaces)> [-d debug_level] <device file> <gcode file>\n",
 	    progname);
-     cout << "\tkeys - should point to a JSON file containing the movement keys for the machine" << endl;
+     cout << "\t--mk - 4 move keys, separated by spaces, like this: `--mk 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
      printf("%s\n", debug_msg.c_str());
      exit(1);
 }
@@ -53,11 +53,17 @@ LaunchOptions parseArgs(int num_args, char * args[])
                i += 2;
                break;
           }
-          else if (currentArg == "--mk0")
+          else if (currentArg == "--mk")
           {
-               // The next argument is the move key
+               if (num_args - i < 5) {
+                    throw runtime_error("Not enough arguments; expected 4 keys.");
+               }
+               // The next 4 argument are the move keys
                options.moveKey0 = stoi(args[i + 1], nullptr /* idx */, 16 /* base */);
-               i += 2;
+               options.moveKey1 = stoi(args[i + 2], nullptr /* idx */, 16 /* base */);
+               options.moveKey2 = stoi(args[i + 3], nullptr /* idx */, 16 /* base */);
+               options.moveKey3 = stoi(args[i + 4], nullptr /* idx */, 16 /* base */);
+               i += 5;
                break;
           }
           else if (!hasParsedDeviceFile)
@@ -88,14 +94,24 @@ int main( int num_args, char * args[] )
 
      // Verify that keys were set at compile time or that they were provided at runtime.
      #ifdef NO_COMPILE_TIME_KEYS
-          if (!launchOptions.moveKey0)
+          if (!launchOptions.moveKey0 ||
+               !launchOptions.moveKey1 ||
+               !launchOptions.moveKey2 ||
+               !launchOptions.moveKey3)
           {
-               cerr << "No move key was provided!" << endl;
+               cerr << "Not all move keys were provided (did you provide 4 keys with `--mk`?)" << endl;
+               cerr << endl;
+               cerr << "Provided: "
+                    << launchOptions.moveKey0.value_or(0ul) << " "
+                    << launchOptions.moveKey1.value_or(0ul) << " "
+                    << launchOptions.moveKey2.value_or(0ul) << " "
+                    << launchOptions.moveKey3.value_or(0ul) << " "
+                    << endl;
                cerr << endl;
                usage(args[0]);
           }
 
-          ckey_type move_key={*launchOptions.moveKey0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
+          ckey_type move_key={*launchOptions.moveKey0, *launchOptions.moveKey1, *launchOptions.moveKey2, *launchOptions.moveKey3 };
           ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
           ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
      #else
