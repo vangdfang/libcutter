@@ -46,7 +46,22 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
     }
 }
 
-bool KeyConfigParser::isKeySetComplete(const KeyConfigParser::KeySet& keySet) const
+KeySet KeyConfigParser::moveKeys() const
+{
+    return toKeySet(m_moveKeys);
+}
+
+KeySet KeyConfigParser::lineKeys() const
+{
+    return toKeySet(m_lineKeys);
+}
+
+KeySet KeyConfigParser::curveKeys() const
+{
+    return toKeySet(m_curveKeys);
+}
+
+bool KeyConfigParser::isKeySetComplete(const KeyConfigParser::OptionalKeySet& keySet) const
 {
     return keySet.key0.has_value() &&
         keySet.key1.has_value() &&
@@ -61,7 +76,15 @@ bool KeyConfigParser::isComplete() const
         isKeySetComplete(m_curveKeys);
 }
 
-KeyConfigParser::KeySet& KeyConfigParser::getKeySetForKeyName(std::string keyName)
+KeySet KeyConfigParser::toKeySet(const KeyConfigParser::OptionalKeySet& keySet) const
+{
+    return KeySet(keySet.key0.value(),
+        keySet.key1.value(),
+        keySet.key2.value(),
+        keySet.key3.value());
+}
+
+KeyConfigParser::OptionalKeySet& KeyConfigParser::getKeySetForKeyName(std::string keyName)
 {
     if (startsWith(keyName, "MOVE_KEY"))
     {
@@ -81,7 +104,7 @@ KeyConfigParser::KeySet& KeyConfigParser::getKeySetForKeyName(std::string keyNam
     }
 }
 
-std::optional<unsigned long>& KeyConfigParser::getKeyForKeyName(KeyConfigParser::KeySet& keySet, std::string keyName) const
+std::optional<unsigned long>& KeyConfigParser::getKeyForKeyName(KeyConfigParser::OptionalKeySet& keySet, std::string keyName) const
 {
     if (endsWith(keyName, "0"))
     {
