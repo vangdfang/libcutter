@@ -1,6 +1,8 @@
 #include "KeyConfigParser.hpp"
 
 #include <fstream>
+#include <sstream>
+#include <iostream>
 
 namespace
 {
@@ -35,14 +37,25 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         std::string keyValue;
         fileStream >> keyName >> keyValue;
 
-        auto keySet = getKeySetForKeyName(keyName);
-        auto specificKey = getKeyForKeyName(keySet, keyName);
-        specificKey = std::stoul(keyValue, nullptr /* idx */, 16 /* base */);
+        auto& keySet = getKeySetForKeyName(keyName);
+        auto& specificKey = getKeyForKeyName(keySet, keyName);
+        const auto value = std::stoul(keyValue, nullptr /* idx */, 16 /* base */);
+        specificKey = value;
+
+        // Debug
+        // std::cout << keyName << ": " << value << " (" << keyValue << ")" << std::endl;
     }
 
     if (!isComplete())
     {
-        throw std::invalid_argument("Incomplete configuration file. You need keys 0-3 for MOVE, LINE, and CURVE.");
+        std::stringstream errorMessage;
+        errorMessage << "Incomplete configuration file. You need keys 0-3 for MOVE, LINE, and CURVE." << std::endl;
+        errorMessage << std::endl;
+        errorMessage << "Move keys: " << m_moveKeys.key0.value_or(0ul) << std::endl;
+        errorMessage << "Line keys: " << m_lineKeys.key0.value_or(0ul) << std::endl;
+        errorMessage << "Curve keys: " << m_curveKeys.key0.value_or(0ul) << std::endl;
+        errorMessage << std::endl;
+        throw std::invalid_argument(errorMessage.str());
     }
 }
 
