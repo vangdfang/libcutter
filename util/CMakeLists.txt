@@ -32,7 +32,7 @@ target_link_libraries (draw_svg cutter svg jpeg png)
 add_executable (test_btea test_btea.cpp)
 target_link_libraries (test_btea cutter)
 
-add_executable (interpreter interpreter.cpp)
+add_executable (interpreter interpreter.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
 target_link_libraries (interpreter cutter)
 
 if(HAS_SDL)
