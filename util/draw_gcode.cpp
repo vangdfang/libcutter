@@ -20,10 +20,20 @@ void usage(char *progname)
 {
      printf("Usage: %s <device file> <gcode file> -f <key config file> [-d debug_level]\n",
 	    progname);
-     // TODO besto
-     cout << "\t--mk - 4 move keys, separated by spaces, like this: `--mk 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
-     cout << "\t--lk - 4 line keys, separated by spaces, like this: `--lk 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
-     cout << "\t--ck - 4 curve keys, separated by spaces, like this: `--ck 12ab56cd 87ab43cd 12ab56cd 87ab43cd`" << endl;
+     cout << "\t-f - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
+     cout << endl;
+     cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
+     cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
+     cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
+     cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
+     cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
+     cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
+     cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
+     cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
+     cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
+     cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
+     cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
+     cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
      printf("%s\n", debug_msg.c_str());
      exit(1);
 }
