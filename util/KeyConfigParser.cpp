@@ -4,10 +4,16 @@
 
 namespace
 {
+    // https://stackoverflow.com/questions/1878001/how-do-i-check-if-a-c-stdstring-starts-with-a-certain-string-and-convert-a
     bool startsWith(const std::string& str, const std::string& needle)
     {
-        // https://stackoverflow.com/questions/1878001/how-do-i-check-if-a-c-stdstring-starts-with-a-certain-string-and-convert-a
         return (str.rfind(needle, 0) == 0);
+    }
+
+    // https://stackoverflow.com/questions/874134/find-out-if-string-ends-with-another-string-in-c
+    bool endsWith(const std::string& str, const std::string& suffix)
+    {
+        return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
     }
 } // namespace anonymous
 
@@ -30,7 +36,13 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         fileStream >> keyName >> keyValue;
 
         auto keySet = getKeySetForKeyName(keyName);
-        
+        auto specificKey = getKeyForKeyName(keySet, keyName);
+        specificKey = keyValue;
+    }
+
+    if (!isComplete())
+    {
+        throw std::invalid_argument("Incomplete configuration file. You need keys 0-3 for MOVE, LINE, and CURVE.");
     }
 }
 
@@ -62,6 +74,30 @@ KeyConfigParser::KeySet& KeyConfigParser::getKeySetForKeyName(std::string keyNam
     else if (startsWith(keyName, "CURVE_KEY"))
     {
         return m_curveKeys;
+    }
+    else
+    {
+        throw std::invalid_argument(std::string("Unknown key: ").append(keyName));
+    }
+}
+
+std::optional<unsigned long>& KeyConfigParser::getKeyForKeyName(KeyConfigParser::KeySet& keySet, std::string keyName) const
+{
+    if (endsWith(keyName, "0"))
+    {
+        return keySet.key0;
+    }
+    else if (endsWith(keyName, "1"))
+    {
+        return keySet.key1;
+    }
+    else if (endsWith(keyName, "2"))
+    {
+        return keySet.key2;
+    }
+    else if (endsWith(keyName, "3"))
+    {
+        return keySet.key3;
     }
     else
     {

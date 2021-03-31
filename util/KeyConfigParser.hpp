@@ -42,6 +42,7 @@ private:
     bool isComplete() const;
 
     KeySet& getKeySetForKeyName(std::string keyName);
+    std::optional<unsigned long>& getKeyForKeyName(KeySet& keySet, std::string keyName) const;
 
     KeySet m_moveKeys{};
     KeySet m_lineKeys{};
