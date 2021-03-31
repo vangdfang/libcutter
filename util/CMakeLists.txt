@@ -23,7 +23,7 @@ add_executable (test_endian test_endian.cpp)
 add_executable (test_serial test_serial.cpp)
 target_link_libraries (test_serial cutter)
 
-add_executable (draw_gcode draw_gcode.cpp gcode.cpp)
+add_executable (draw_gcode draw_gcode.cpp gcode.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
 target_link_libraries (draw_gcode cutter)
 
 add_executable (draw_svg draw_svg.cpp)

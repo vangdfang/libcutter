@@ -32,7 +32,7 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         // Formatted extraction pulls a string and a ulong from a string,
         // separated by whitespace.
         std::string keyName;
-        unsigned long keyValue;
+        individual_key_t keyValue;
         fileStream >> keyName >> keyValue;
 
         auto keySet = getKeySetForKeyName(keyName);
@@ -104,7 +104,7 @@ KeyConfigParser::OptionalKeySet& KeyConfigParser::getKeySetForKeyName(std::strin
     }
 }
 
-std::optional<unsigned long>& KeyConfigParser::getKeyForKeyName(KeyConfigParser::OptionalKeySet& keySet, std::string keyName) const
+std::optional<individual_key_t>& KeyConfigParser::getKeyForKeyName(KeyConfigParser::OptionalKeySet& keySet, std::string keyName) const
 {
     if (endsWith(keyName, "0"))
     {

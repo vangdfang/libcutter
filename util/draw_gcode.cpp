@@ -83,10 +83,17 @@ int main( int num_args, char * args[] )
      const auto launchOptions = parseArgs(num_args, args);
      if (!launchOptions.device_file || !launchOptions.gcode_file)
      {
-          cerr << "Please provide a device file and GCode file" << endl;
+          #ifdef NO_COMPILE_TIME_KEYS
+               cerr << "Please provide a device file, GCode file, and key configuration file" << endl;
+          #else
+               cerr << "Please provide a device file and GCode file" << endl;
+          #endif
           cerr << endl;
           cerr << "Provided device: " << launchOptions.device_file.value_or("(missing)") << endl;
           cerr << "Provided GCode: " << launchOptions.gcode_file.value_or("(missing)") << endl;
+          #ifdef NO_COMPILE_TIME_KEYS
+               cerr << "Provided key config: " << (launchOptions.key_config ? "Provided" : "(missing)") << endl;
+          #endif;
           cerr << endl;
           usage(args[0]);
      }
