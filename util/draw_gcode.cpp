@@ -86,11 +86,11 @@ int main( int num_args, char * args[] )
           {
                return parseArgs(num_args, args);
           }
-          catch(const std::exception& e)
+          catch(const exception& e)
           {
-               std::cerr << "Failed to parse args:" << std::endl;
-               std::cerr << e.what() << std::endl;
-               std::cerr << std::endl;
+               cerr << "Failed to parse args:" << endl;
+               cerr << e.what() << endl;
+               cerr << endl;
                usage(args[0]);
                exit(1);
           }

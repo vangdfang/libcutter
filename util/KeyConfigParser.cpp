@@ -32,12 +32,12 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         // Formatted extraction pulls a string and a ulong from a string,
         // separated by whitespace.
         std::string keyName;
-        individual_key_t keyValue;
+        std::string keyValue;
         fileStream >> keyName >> keyValue;
 
         auto keySet = getKeySetForKeyName(keyName);
         auto specificKey = getKeyForKeyName(keySet, keyName);
-        specificKey = keyValue;
+        specificKey = std::stoul(keyValue, nullptr /* idx */, 16 /* base */);
     }
 
     if (!isComplete())
