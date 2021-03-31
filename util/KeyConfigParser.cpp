@@ -17,6 +17,21 @@ namespace
     {
         return str.size() >= suffix.size() && 0 == str.compare(str.size()-suffix.size(), suffix.size(), suffix);
     }
+
+    template<typename T>
+    std::string toString(std::optional<T> opt)
+    {
+        if (opt.has_value())
+        {
+            std::stringstream ss;
+            ss << *opt;
+            return ss.str();
+        }
+        else
+        {
+            return "(missing)";
+        }
+    }
 } // namespace anonymous
 
 KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
@@ -51,9 +66,9 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         std::stringstream errorMessage;
         errorMessage << "Incomplete configuration file. You need keys 0-3 for MOVE, LINE, and CURVE." << std::endl;
         errorMessage << std::endl;
-        errorMessage << "Move keys: " << m_moveKeys.key0.value_or(0ul) << std::endl;
-        errorMessage << "Line keys: " << m_lineKeys.key0.value_or(0ul) << std::endl;
-        errorMessage << "Curve keys: " << m_curveKeys.key0.value_or(0ul) << std::endl;
+        errorMessage << "Move keys: " << m_moveKeys.str() << std::endl;
+        errorMessage << "Line keys: " << m_lineKeys.str() << std::endl;
+        errorMessage << "Curve keys: " << m_curveKeys.str() << std::endl;
         errorMessage << std::endl;
         throw std::invalid_argument(errorMessage.str());
     }
@@ -72,6 +87,21 @@ KeySet KeyConfigParser::lineKeys() const
 KeySet KeyConfigParser::curveKeys() const
 {
     return toKeySet(m_curveKeys);
+}
+
+std::string KeyConfigParser::OptionalKeySet::str() const
+{
+    std::stringstream str;
+    str << "[";
+    str << toString(key0);
+    str << ", ";
+    str << toString(key1);
+    str << ", ";
+    str << toString(key2);
+    str << ", ";
+    str << toString(key3);
+    str << "]";
+    return str.str();
 }
 
 bool KeyConfigParser::isKeySetComplete(const KeyConfigParser::OptionalKeySet& keySet) const

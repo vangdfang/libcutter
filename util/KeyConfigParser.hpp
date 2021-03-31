@@ -57,6 +57,8 @@ private:
         std::optional<individual_key_t> key1;
         std::optional<individual_key_t> key2;
         std::optional<individual_key_t> key3;
+
+        std::string str() const;
     };
 
     bool isKeySetComplete(const OptionalKeySet& keySet) const;
