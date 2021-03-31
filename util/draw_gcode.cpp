@@ -80,7 +80,22 @@ LaunchOptions parseArgs(int num_args, char * args[])
 
 int main( int num_args, char * args[] )
 {
-     const auto launchOptions = parseArgs(num_args, args);
+     const auto launchOptions = ([&]() -> LaunchOptions
+     {
+          try
+          {
+               return parseArgs(num_args, args);
+          }
+          catch(const std::exception& e)
+          {
+               std::cerr << "Failed to parse args:" << std::endl;
+               std::cerr << e.what() << std::endl;
+               std::cerr << std::endl;
+               usage(args[0]);
+               exit(1);
+          }
+     }());
+
      if (!launchOptions.device_file || !launchOptions.gcode_file)
      {
           #ifdef NO_COMPILE_TIME_KEYS
@@ -93,7 +108,7 @@ int main( int num_args, char * args[] )
           cerr << "Provided GCode: " << launchOptions.gcode_file.value_or("(missing)") << endl;
           #ifdef NO_COMPILE_TIME_KEYS
                cerr << "Provided key config: " << (launchOptions.key_config ? "Provided" : "(missing)") << endl;
-          #endif;
+          #endif
           cerr << endl;
           usage(args[0]);
      }
