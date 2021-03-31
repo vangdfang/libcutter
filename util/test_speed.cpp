@@ -36,6 +36,10 @@ int main(int argc, char *argv[])
     }
     Device::C cutter(argv[1]);
 
+    #ifdef NO_COMPILE_TIME_KEYS
+        #warning This project requires compile-time keys.
+    #endif
+
     ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3};
     cutter.set_move_key(move_key);
 

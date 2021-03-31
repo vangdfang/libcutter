@@ -751,6 +751,10 @@ int main(int numArgs, char * args[] )
     c.stop();
     c.start();
 
+    #ifdef NO_COMPILE_TIME_KEYS
+        #warning This project requires compile-time keys.
+    #endif
+
     ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
     c.set_move_key(move_key);
 
