@@ -38,6 +38,9 @@ private:
         std::optional<unsigned long> key3;
     };
 
+    bool isKeySetComplete(const KeySet& keySet) const;
+    bool isComplete() const;
+
     KeySet& getKeySetForKeyName(std::string keyName);
 
     KeySet m_moveKeys{};

@@ -30,7 +30,23 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         fileStream >> keyName >> keyValue;
 
         auto keySet = getKeySetForKeyName(keyName);
+        
     }
+}
+
+bool KeyConfigParser::isKeySetComplete(const KeyConfigParser::KeySet& keySet) const
+{
+    return keySet.key0.has_value() &&
+        keySet.key1.has_value() &&
+        keySet.key2.has_value() &&
+        keySet.key3.has_value();
+}
+
+bool KeyConfigParser::isComplete() const
+{
+    return isKeySetComplete(m_moveKeys) &&
+        isKeySetComplete(m_lineKeys) &&
+        isKeySetComplete(m_curveKeys);
 }
 
 KeyConfigParser::KeySet& KeyConfigParser::getKeySetForKeyName(std::string keyName)
