@@ -43,7 +43,10 @@ int main(int argc, char* argv[])
 
     if( argc != 2 )
     {
+        cout << "Test serial communication by attempting to cut a rectangle" << endl;
+        cout << endl;
         cout << "usage: " << argv[0] << " device" << endl;
+        cout << "\tdevice - a serial device on your computer. On UNIX, something like /dev/cu.usbserial-10" << endl;
         return 1;
     }
     ports.push_back(new serial_port(argv[1]));
