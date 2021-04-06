@@ -26,7 +26,7 @@ IF(APPLE)
     include_directories("/opt/homebrew/include")
 ENDIF()
 
-add_executable (test_speed test_speed.cpp)
+add_executable (test_speed test_speed.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
 target_link_libraries (test_speed cutter)
 
 add_executable (test_endian test_endian.cpp)
