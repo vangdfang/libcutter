@@ -22,7 +22,7 @@ By default, this project compiles for runtime keys. If you would like to specify
 1. Remove the `#define NO_COMPILE_TIME_KEYS` block.
 2. Replace all the dummy keys with your keys.
 
-If you do not specify compile-time keys, your must provide a configuration file at runtime. This looks very similar to `keys.h`---it is a simple text file with a key's name and a key on each line, separated by whitespace. Like this (using fake keys):
+If you do not specify compile-time keys, you must provide a configuration file at runtime. This looks very similar to `keys.h`---it is a simple text file with a key's name and a key on each line, separated by whitespace. Like this (using fake keys):
 
 ```
 MOVE_KEY_0  0x0123abcd
