@@ -22,12 +22,25 @@ libcutter itself does not have many dependencies outside of OS-level serial port
 - libpng - needed by libsvg
 - SDL1.2 & SDL1.2GFX - needed by some of the simulator tools
 
-## Building for Linux/UNIX
-- mkdir build
-- cd build
-- cmake ..
-- make
-- ./util/some-program
+### Installing libsvg
+
+If you're on a Mac (though you may need to wait for [the formula to be fixed](https://github.com/Homebrew/homebrew-core/pull/68760)):
+
+```bash
+brew install libsvg # or `brew install --build-from-source libsvg`
+```
+
+Otherwise, extract the file in the `deps/` directory and follow the instructions in `INSTALL`. You may need to apply the patch mentioned above: patch `png_set_gray_1_2_4_to_8` to `png_set_expand_gray_1_2_4_to_8` in `src/svg_image.c`.
+
+## Building for Linux/UNIX/Mac
+
+From this directory:
+
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make`
+- Yay! Now you can run the code: `./util/some-program`
 
 ## Building for Windows 
 To build for win32, you first need MinGW (look at the mingw32 packages on Debian).

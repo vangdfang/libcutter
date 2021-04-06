@@ -15,6 +15,17 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     target_link_libraries (jsdrive_relative cutter pthread )
 endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
+IF(APPLE)
+    # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
+    link_directories("/opt/local/lib")
+    include_directories("/opt/local/include")
+
+    # Fix for M1 Macs, where Homebrew uses a different location. See
+    # https://apple.stackexchange.com/questions/410825/apple-silicon-port-all-homebrew-packages-under-usr-local-opt-to-opt-homebrew
+    link_directories("/opt/homebrew/lib")
+    include_directories("/opt/homebrew/include")
+ENDIF()
+
 add_executable (test_speed test_speed.cpp)
 target_link_libraries (test_speed cutter)
 
