@@ -37,7 +37,7 @@ target_link_libraries (test_serial cutter)
 add_executable (draw_gcode draw_gcode.cpp gcode.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
 target_link_libraries (draw_gcode cutter)
 
-add_executable (draw_svg draw_svg.cpp)
+add_executable (draw_svg draw_svg.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
 target_link_libraries (draw_svg cutter svg jpeg png)
 
 add_executable (test_btea test_btea.cpp)
