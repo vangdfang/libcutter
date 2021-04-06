@@ -3,7 +3,9 @@
         {
             "name": "Mac, working",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/local/include",
+                "/opt/homebrew/include"
             ],
             "defines": [],
             "macFrameworkPath": [],
