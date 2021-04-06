@@ -46,8 +46,10 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
 
     while (fileStream.good())
     {
-        // Formatted extraction pulls a string and a ulong from a string,
-        // separated by whitespace.
+        // Formatted extraction pulls two strings from a string, separated by
+        // whitespace. The first should be the "name" of the key, followed by
+        // the value it should have. We use `stoul` so that users can provide
+        // the number in formats like `0x00ul`, `0ul`, and `0`.
         std::string keyName;
         std::string keyValue;
         fileStream >> keyName >> keyValue;
