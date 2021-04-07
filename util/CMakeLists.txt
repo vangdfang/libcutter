@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.6.0...3.19)
     endif(COMMAND cmake_policy)
 include_directories(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/include/pub)
 
-find_library(HAS_SDL NAMES SDL SDL_gfx)
+find_library(HAS_SDL NAMES SDL2 SDL2_gfx)
 
 IF(APPLE)
     # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035

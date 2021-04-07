@@ -19,7 +19,7 @@ if(SWIG_FOUND)
     endif(PYTHONLIBS_FOUND)
 endif(SWIG_FOUND)
 
-find_library(HAS_SDL NAMES SDL SDL_gfx)
+find_library(HAS_SDL NAMES SDL2 SDL2_gfx)
 
 set(cutter_files
     serial_port.cpp
@@ -39,13 +39,13 @@ endif(HAS_SDL)
 
 add_library (cutter SHARED ${cutter_files})
 if(HAS_SDL)
-    target_link_libraries (cutter SDL SDL_gfx)
+    target_link_libraries (cutter SDL2 SDL2_gfx)
 endif(HAS_SDL)
 
 if(PYTHONLIBS_FOUND)
     swig_add_library(pycutter TYPE SHARED LANGUAGE python SOURCES cutter.i)
     swig_link_libraries(pycutter ${PYTHON_LIBRARIES})
     if(HAS_SDL)
-        target_link_libraries(pycutter SDL SDL_gfx)
+        target_link_libraries(pycutter SDL2 SDL2_gfx)
     endif(HAS_SDL)
 endif(PYTHONLIBS_FOUND)
