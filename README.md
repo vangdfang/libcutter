@@ -43,7 +43,7 @@ libcutter itself does not have many dependencies outside of OS-level serial port
 
 - libsvg - a copy is in deps folder, need to patch png_set_gray_1_2_4_to_8 to png_set_expand_gray_1_2_4_to_8 in src/svg_image.c
 - libpng - needed by libsvg
-- SDL1.2 & SDL1.2GFX - needed by some of the simulator tools
+- SDL2 & SDL2GFX - needed by some of the simulator tools
 
 ### Installing libsvg
 

@@ -23,7 +23,7 @@
 #define DEVICE_CV_SIM_HPP
 
 #include <stdint.h>
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "device.hpp"
 #include "types.h"
@@ -50,7 +50,8 @@ namespace Device
             xy current_position;
             std::string output_filename;
             bool running;
-            SDL_Surface * image;
+            SDL_Window * screen;
+            SDL_Renderer * renderer;
             float tool_width;
     };
 }
