@@ -12,17 +12,9 @@ for them here or elsewhere.
 
 ## Providing keys
 
-You have two options for providing these keys:
+You must provide keys at runtime by passing in a path to a key configuration file to each utility.
 
-* Provide them at runtime, using a config file, for maximum flexibility.
-* Provide them at compile-time, so you don't have to use a config file each time.
-
-By default, this project compiles for runtime keys. If you would like to specify compile-time keys, see `include/pub/keys.h`. Simply:
-
-1. Remove the `#define NO_COMPILE_TIME_KEYS` block.
-2. Replace all the dummy keys with your keys.
-
-If you do not specify compile-time keys, you must provide a configuration file at runtime. This looks very similar to `keys.h`---it is a simple text file with a key's name and a key on each line, separated by whitespace. Like this (using fake keys):
+Key config files are a simple text file with a key's name and a key on each line, separated by whitespace. Like this (using fake keys):
 
 ```
 MOVE_KEY_0  0x0123abcd

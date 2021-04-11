@@ -7,14 +7,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include/ ${PROJECT_SOURCE_DIR}/include
 
 find_library(HAS_SDL NAMES SDL SDL_gfx)
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    add_executable (jsdrive jsdrive.cpp)
-    target_link_libraries (jsdrive cutter pthread)
-
-    add_executable (jsdrive_relative jsdrive_relative.cpp)
-    target_link_libraries (jsdrive_relative cutter pthread )
-endif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-
 IF(APPLE)
     # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
     link_directories("/opt/local/lib")
@@ -55,8 +47,5 @@ if(HAS_SDL)
 
     add_executable (interpreter_cv interpreter_cv.cpp)
     target_link_libraries (interpreter_cv cutter)
-
-    add_executable (jsdrive_cv jsdrive_cv.cpp)
-    target_link_libraries (jsdrive_cv cutter pthread)
 endif(HAS_SDL)
 

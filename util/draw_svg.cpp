@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "device_c.hpp"
-#include "keys.h"
 #include "KeyConfigParser.hpp"
 
 using namespace std;
@@ -741,62 +740,43 @@ int main(int numArgs, char * args[] )
     svg_length_t height;
     svg_render_engine_t engine;
 
-    #ifdef NO_COMPILE_TIME_KEYS
-        if( numArgs != 4 )
-        {
-            cout<<"Usage: "<<args[0]<<" <svg file> <device file> <key config file>"<<endl;
-            cout << endl;
-            cout << "\t<svg file> - SVG file to interpret ('foo.svg')" << endl;
-            cout << endl;
-            cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
-            cout << endl;
-            cout << "\t<key config file> - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
-            cout << endl;
-            cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
-            cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
-            cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
-            cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
-            cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
-            cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
-            cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
-            cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
-            cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
-            cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
-            cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
-            cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
-            exit(1);
-        }
-    #else
-        if( numArgs != 3 )
-        {
-            cout<<"Usage: "<<args[0]<<" <svg file> <device file>"<<endl;
-            cout << endl;
-            cout << "\t<svg file> - SVG file to interpret ('foo.svg')" << endl;
-            cout << endl;
-            cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
-            cout << endl;
-            exit(4);
-        }
-    #endif
+    if( numArgs != 4 )
+    {
+        cout<<"Usage: "<<args[0]<<" <svg file> <device file> <key config file>"<<endl;
+        cout << endl;
+        cout << "\t<svg file> - SVG file to interpret ('foo.svg')" << endl;
+        cout << endl;
+        cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
+        cout << endl;
+        cout << "\t<key config file> - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
+        cout << endl;
+        cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
+        cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
+        cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
+        cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
+        cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
+        cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
+        cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
+        cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
+        cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
+        cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
+        cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
+        cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
+        exit(1);
+    }
 
     Device::C c( args[2] );
     c.stop();
     c.start();
 
-    #ifdef NO_COMPILE_TIME_KEYS
-        KeyConfigParser keyConfig(args[3]);
+    KeyConfigParser keyConfig(args[3]);
 
-        auto moveKeys = keyConfig.moveKeys();
-        auto lineKeys = keyConfig.lineKeys();
-        auto curveKeys = keyConfig.curveKeys();
-        ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
-        ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
-        ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };
-    #else
-        ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
-        ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
-        ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
-    #endif
+    auto moveKeys = keyConfig.moveKeys();
+    auto lineKeys = keyConfig.lineKeys();
+    auto curveKeys = keyConfig.curveKeys();
+    ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
+    ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
+    ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };
 
     c.set_move_key(move_key);
     c.set_line_key(line_key);
