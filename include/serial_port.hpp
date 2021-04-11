@@ -16,11 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * Should you need to contact us, the author, you can do so either at
- * http://github.com/vangdfang/libcutter, or by paper mail:
- *
- * libcutter Developers @ Cowtown Computer Congress
- * 3101 Mercier Street #404, Kansas City, MO 64111
+ * Should you need to contact us, the author, you can do so at
+ * http://github.com/vangdfang/libcutter
  */
 #ifndef SERIAL_PORT_HPP
 #define SERIAL_PORT_HPP
@@ -34,6 +31,7 @@
 #endif
 #else
 /* place any win32 includes here */
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -47,16 +45,15 @@ class serial_port
 {
     public:
         serial_port();
-        serial_port( const std::string & filename );
         ~serial_port();
 
         bool is_open();
-        void p_open( const std::string & filename );
+        void p_open( const std::string & filename, int baud_rate );
         void p_close();
 
         std::size_t p_write( const uint8_t * data, std::size_t size );
         std::size_t p_read(  uint8_t * data, std::size_t size );
-	int delay(int);
+        int delay(int);
 
     protected:
     #if( !__WIN32 )

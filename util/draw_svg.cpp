@@ -5,8 +5,7 @@
 #include <unistd.h>
 
 #include "device_c.hpp"
-
-#include "keys.h"
+#include "KeyConfigParser.hpp"
 
 using namespace std;
 
@@ -743,23 +742,33 @@ int main(int numArgs, char * args[] )
 
     if( numArgs != 3 )
     {
-        cout<<"Usage: "<<args[0]<<" svgfile.svg iodevice"<<endl;
-        return 4;
+        cout<<"Usage: "<<args[0]<<" <svg file> <device file>"<<endl;
+        cout << endl;
+        cout << "\t<svg file> - SVG file to interpret ('foo.svg')" << endl;
+        cout << endl;
+        cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
+        exit(1);
     }
 
     Device::C c( args[2] );
     c.stop();
     c.start();
 
-    ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
+    KeyConfigParser keyConfig;
+
+    auto moveKeys = keyConfig.moveKeys();
+    auto lineKeys = keyConfig.lineKeys();
+    auto curveKeys = keyConfig.curveKeys();
+    ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
+    ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
+    ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };
+
     c.set_move_key(move_key);
-
-    ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
     c.set_line_key(line_key);
-
-    ckey_type curve_key={CURVE_KEY_0, CURVE_KEY_1, CURVE_KEY_2, CURVE_KEY_3 };
     c.set_curve_key(curve_key);
 
+    c.stop();
+    c.start();
 
     svg_render_state_t state(c);
 

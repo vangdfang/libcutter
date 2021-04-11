@@ -16,11 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
- * Should you need to contact us, the author, you can do so either at
- * http://github.com/vangdfang/libcutter, or by paper mail:
- *
- * libcutter Developers @ Cowtown Computer Congress
- * 3101 Mercier Street #404, Kansas City, MO 64111
+ * Should you need to contact us, the author, you can do so at
+ * http://github.com/vangdfang/libcutter
  */
 
 #include "serial_port.hpp"
@@ -46,10 +43,15 @@ int main(int argc, char* argv[])
         cout << "Test serial communication by attempting to cut a rectangle" << endl;
         cout << endl;
         cout << "usage: " << argv[0] << " device" << endl;
-        cout << "\tdevice - a serial device on your computer. On UNIX, something like /dev/cu.usbserial-10" << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
         return 1;
     }
-    ports.push_back(new serial_port(argv[1]));
+    auto sp = new serial_port();
+    sp->p_open(argv[1], 200000);
+    ports.push_back(sp);
 
     serial_port *p = ports.front();
 

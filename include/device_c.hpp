@@ -16,11 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * Should you need to contact us, the author, you can do so either at
- * http://github.com/vangdfang/libcutter, or by paper mail:
- *
- * libcutter Developers @ Cowtown Computer Congress
- * 3101 Mercier Street #404, Kansas City, MO 64111
+ * Should you need to contact us, the author, you can do so at
+ * http://github.com/vangdfang/libcutter
  */
 #ifndef DEVICE_C_HPP
 #define DEVICE_C_HPP
@@ -63,6 +60,9 @@ namespace Device
                 return m_serial.is_open();
             }
         private:
+            /*This is in question and needs remeasured*/
+            /*See https://github.com/vangdfang/libcutter/issues/20 */
+            static const int baud_rate = 200000;
             inline int get_rand() const
             {
                 /*No, we're not bad at math. This is cryptographic padding

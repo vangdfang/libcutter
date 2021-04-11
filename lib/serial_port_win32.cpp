@@ -16,11 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
- * Should you need to contact us, the author, you can do so either at
- * http://github.com/vangdfang/libcutter, or by paper mail:
- *
- * libcutter Developers @ Cowtown Computer Congress
- * 3101 Mercier Street #404, Kansas City, MO 64111
+ * Should you need to contact us, the author, you can do so at
+ * http://github.com/vangdfang/libcutter
  */
 #include "serial_port.hpp"
 #include <cstdio>
@@ -30,6 +27,7 @@
 #include <unistd.h>
 #include <cmath>
 #include <string>
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 using std::size_t;
@@ -55,13 +53,7 @@ bool serial_port::is_open()
 }
 
 
-serial_port::serial_port( const string & filename )
-{
-    p_open( filename );
-}
-
-
-void serial_port::p_open( const string & filename )
+void serial_port::p_open( const string & filename, int baud_rate )
 {
     DCB newdcb = { 0 };
     COMMTIMEOUTS newtimeouts = { 0 };
@@ -74,7 +66,7 @@ void serial_port::p_open( const string & filename )
             // Could not save comm state
         }
         newdcb.DCBlength = sizeof( newdcb );
-        newdcb.BaudRate = 200000;
+        newdcb.BaudRate = baud_rate;
         newdcb.ByteSize = 8;
         newdcb.StopBits = ONESTOPBIT;
         newdcb.Parity = NOPARITY;

@@ -16,11 +16,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  *
- * Should you need to contact us, the author, you can do so either at
- * http://github.com/vangdfang/libcutter, or by paper mail:
- *
- * libcutter Developers @ Cowtown Computer Congress
- * 3101 Mercier Street #404, Kansas City, MO 64111
+ * Should you need to contact us, the author, you can do so at
+ * http://github.com/vangdfang/libcutter
  */
 
 #ifndef TEST_SERIAL_HPP

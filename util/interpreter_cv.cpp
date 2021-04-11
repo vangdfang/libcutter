@@ -11,7 +11,19 @@ int main( int numArgs, char * args[] )
 {
     if( numArgs != 3 )
     {
-        cout<<"Usage: "<<args[0]<<" /dev/serial/port filename"<<endl;
+        cout<<"Usage: "<<args[0]<<" <device file> <input file>"<<endl;
+        cout << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
+        cout << endl;
+        cout << "\t<input file> - file to interpret. Formatted:" << endl;
+        cout << endl;
+        cout << "\t\tMove to: m <x> <y>" << endl;
+        cout << "\t\tCut to: c <x> <y>" << endl;
+        cout << "\t\tCurve: b <x1> <y1> <x2> <y2> <x3> <y3> <x4> <y4>" << endl;
+        cout << "\t\tSleep: t <millis>" << endl;
         exit(1);
     }
 

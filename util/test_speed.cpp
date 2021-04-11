@@ -5,7 +5,7 @@
 #include <stdlib.h>
 using namespace std;
 
-#include "keys.h"
+#include "KeyConfigParser.hpp"
 
 void clean_up(int signal)
 {
@@ -31,15 +31,25 @@ int main(int argc, char *argv[])
 
     if( argc != 2 )
     {
-        cout << "usage: " << argv[0] << " device" << endl;
-        return 1;
+        cout<<"Usage: "<<argv[0]<<" <device file>"<<endl;
+        cout << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
+        exit(1);
     }
+
     Device::C cutter(argv[1]);
 
-    ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3};
-    cutter.set_move_key(move_key);
+    KeyConfigParser keyConfig;
 
-    ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
+    auto moveKeys = keyConfig.moveKeys();
+    auto lineKeys = keyConfig.lineKeys();
+    ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
+    ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
+
+    cutter.set_move_key(move_key);
     cutter.set_line_key(line_key);
 
     cutter.stop();

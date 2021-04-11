@@ -5,14 +5,27 @@
 #include <unistd.h>
 using namespace std;
 
-#include "keys.h"
 #include "device_c.hpp"
+#include "KeyConfigParser.hpp"
 
 int main( int numArgs, char * args[] )
 {
     if( numArgs != 3 )
     {
-        cout<<"Usage: "<<args[0]<<" /dev/serial/port filename"<<endl;
+        cout << "Usage: "<<args[0]<<" <device file> <input file>" << endl;
+        cout << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
+        cout << endl;
+        cout << "\t<input file> - file to interpret. Formatted:" << endl;
+        cout << endl;
+        cout << "\t\tMove to: m <x> <y>" << endl;
+        cout << "\t\tCut to: c <x> <y>" << endl;
+        cout << "\t\tCurve: b <x1> <y1> <x2> <y2> <x3> <y3> <x4> <y4>" << endl;
+        cout << "\t\tSleep: t <millis>" << endl;
+        cout << endl;
         exit(1);
     }
 
@@ -24,11 +37,19 @@ int main( int numArgs, char * args[] )
     }
 
     Device::C c(args[1]);
-    ckey_type move_key={MOVE_KEY_0, MOVE_KEY_1, MOVE_KEY_2, MOVE_KEY_3 };
-    c.set_move_key(move_key);
 
-    ckey_type line_key={LINE_KEY_0, LINE_KEY_1, LINE_KEY_2, LINE_KEY_3 };
+    KeyConfigParser keyConfig;
+
+    auto moveKeys = keyConfig.moveKeys();
+    auto lineKeys = keyConfig.lineKeys();
+    auto curveKeys = keyConfig.curveKeys();
+    ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
+    ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
+    ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };
+
+    c.set_move_key(move_key);
     c.set_line_key(line_key);
+    c.set_curve_key(curve_key);
 
     c.stop();
     c.start();
