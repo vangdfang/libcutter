@@ -16,6 +16,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Unzip libsvg
+      run: tar -xvf ${{github.workspace}}/deps/libsvg-0.1.4.tar.gz
+      
+    - name: Build & install libsvg
+      working-directory: ${{github.workspace}}/deps/libsvg-0.1.4 
+      run: ./configure && make && make install
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
