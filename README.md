@@ -66,5 +66,11 @@ From this directory:
 - Yay! Now you can run the code: `./util/some-program`
 
 ## Building for Windows 
-To build for win32, you first need MinGW (look at the mingw32 packages on Debian).
-./build-win32.sh has a sample for how to build the system.
+To build for win32, you first need MinGW. On Debian install the following packages:
+
+- mingw-w64
+- mingw-w64-i686-dev
+
+Once done, ./build-win32.sh has a sample for how to build the library and utilites.
+
+Note, currently some of the utilities do not build on Win32 if libsvg is not present.

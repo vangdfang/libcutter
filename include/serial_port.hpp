@@ -31,6 +31,7 @@
 #endif
 #else
 /* place any win32 includes here */
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
