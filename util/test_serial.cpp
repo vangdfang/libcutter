@@ -46,7 +46,10 @@ int main(int argc, char* argv[])
         cout << "Test serial communication by attempting to cut a rectangle" << endl;
         cout << endl;
         cout << "usage: " << argv[0] << " device" << endl;
-        cout << "\tdevice - a serial device on your computer. On UNIX, something like /dev/cu.usbserial-10" << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
         return 1;
     }
     ports.push_back(new serial_port(argv[1]));

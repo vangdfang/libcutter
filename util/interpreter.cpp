@@ -12,9 +12,12 @@ int main( int numArgs, char * args[] )
 {
     if( numArgs != 3 )
     {
-        cout<<"Usage: "<<args[0]<<" <device file> <input file>"<<endl;
+        cout << "Usage: "<<args[0]<<" <device file> <input file>" << endl;
         cout << endl;
-        cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
         cout << endl;
         cout << "\t<input file> - file to interpret. Formatted:" << endl;
         cout << endl;

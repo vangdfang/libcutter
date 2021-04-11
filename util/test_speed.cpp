@@ -33,7 +33,10 @@ int main(int argc, char *argv[])
     {
         cout<<"Usage: "<<argv[0]<<" <device file>"<<endl;
         cout << endl;
-        cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
+        cout << "\t<device file> - serial port file of the cutter. Looks like:" << endl;
+        cout << "\t\t/dev/ttyUSBx" << endl;
+        cout << "\t\t/dev/cu.usbserial-10" << endl;
+        cout << "\t\t/dev/serial/port" << endl;
         exit(1);
     }
 
