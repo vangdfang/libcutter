@@ -21,7 +21,15 @@ jobs:
       working-directory: ${{github.workspace}}/deps
       run: tar -xvf ${{github.workspace}}/deps/libsvg-0.1.4.tar.gz
     
-    - name: Patch libsvg (quick 'n dirty)
+    # Mac is very particular
+    # https://stackoverflow.com/questions/11287564/getting-sed-error-illegal-byte-sequence-in-bash
+    - if: matrix.os == 'macOS-latest'
+      name: Patch libsvg (quick 'n dirty); FreeBSD
+      working-directory: ${{github.workspace}}/deps/libsvg-0.1.4/src
+      run: LC_ALL=C sed -i '' 's/png_set_gray_1_2_4_to_8/png_set_expand_gray_1_2_4_to_8/' svg_image.c
+      
+    - if: matrix.os != 'macOS-latest'
+      name: Patch libsvg (quick 'n dirty); UNIXy
       working-directory: ${{github.workspace}}/deps/libsvg-0.1.4/src
       run: sed -i 's/png_set_gray_1_2_4_to_8/png_set_expand_gray_1_2_4_to_8/' svg_image.c
       
