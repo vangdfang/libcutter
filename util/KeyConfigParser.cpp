@@ -4,6 +4,16 @@
 #include <sstream>
 #include <iostream>
 
+#if defined(_WIN32)
+    #include <io.h>
+    #define access _access
+    #ifndef R_OK
+        #define R_OK 4 /* Test for read permission.  */
+    #endif
+#else
+    #include <unistd.h>
+#endif
+
 namespace
 {
     // https://stackoverflow.com/questions/1878001/how-do-i-check-if-a-c-stdstring-starts-with-a-certain-string-and-convert-a
@@ -34,14 +44,35 @@ namespace
     }
 } // namespace anonymous
 
-KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
+static void appendKeyConfigFileStructure(std::ostream & errorMessage)
+{
+    errorMessage <<"a .libcutter file must be supplied with the following contents:" << std::endl;
+    errorMessage << std::endl;
+    errorMessage << "\tMOVE_KEY_0  0x0123abcd" << std::endl;
+    errorMessage << "\tMOVE_KEY_1  0x0123abcd" << std::endl;
+    errorMessage << "\tMOVE_KEY_2  0x0123abcd" << std::endl;
+    errorMessage << "\tMOVE_KEY_3  0x0123abcd" << std::endl;
+    errorMessage << "\tLINE_KEY_0  0x0123abcd" << std::endl;
+    errorMessage << "\tLINE_KEY_1  0x0123abcd" << std::endl;
+    errorMessage << "\tLINE_KEY_2  0x0123abcd" << std::endl;
+    errorMessage << "\tLINE_KEY_3  0x0123abcd" << std::endl;
+    errorMessage << "\tCURVE_KEY_0  0x0123abcd" << std::endl;
+    errorMessage << "\tCURVE_KEY_1  0x0123abcd" << std::endl;
+    errorMessage << "\tCURVE_KEY_2  0x0123abcd" << std::endl;
+    errorMessage << "\tCURVE_KEY_3  0x0123abcd" << std::endl;
+}
+
+void KeyConfigParser::parseConfigFile(const std::string& configFilePath)
 {
     // Open the file!
     std::ifstream fileStream(configFilePath);
 
     if (!fileStream.is_open())
     {
-        throw std::invalid_argument("Could not open config file:" + configFilePath);
+        std::stringstream errorMessage;
+        errorMessage << "Could not open config file:" << configFilePath << std::endl;
+        appendKeyConfigFileStructure( errorMessage );
+        throw std::invalid_argument( errorMessage.str() );
     }
 
     while (fileStream.good())
@@ -66,7 +97,7 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
     if (!isComplete())
     {
         std::stringstream errorMessage;
-        errorMessage << "Incomplete configuration file. You need keys 0-3 for MOVE, LINE, and CURVE." << std::endl;
+        errorMessage << "Incomplete configuration file at" << configFilePath <<". You need keys 0-3 for MOVE, LINE, and CURVE." << std::endl;
         errorMessage << std::endl;
         errorMessage << "Move keys: " << m_moveKeys.str() << std::endl;
         errorMessage << "Line keys: " << m_lineKeys.str() << std::endl;
@@ -74,6 +105,49 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
         errorMessage << std::endl;
         throw std::invalid_argument(errorMessage.str());
     }
+}
+
+KeyConfigParser::KeyConfigParser()
+{
+    std::string config_filename = ".libcutter";
+    if( access( config_filename.c_str(), R_OK ) == 0 )
+    {
+       parseConfigFile( config_filename );
+       return;
+    }
+
+#if defined(_WIN32)
+    char * home = getenv( "USERPROFILE" );
+    char sep = '\\';
+#else
+    char * home = getenv( "HOME" );
+    char sep = '/';
+#endif
+
+    if( home )
+    {
+        std::string home_config = std::string(home) + sep + config_filename;
+        if( access( home_config.c_str(), R_OK ) == 0 )
+        {
+            parseConfigFile( home + config_filename );
+            return;
+        }
+    }
+
+    printf("USERPROFILE = %s\n", getenv("USERPROFILE"));
+
+    std::stringstream errorMessage;
+    errorMessage <<"unable to locate an accessible .libcutter config file in the usual places:"<<std::endl;
+    errorMessage <<"\t.libcutter" << std::endl;
+    errorMessage <<"\t$HOME/.libcutter (POSIX)" << std::endl;
+    errorMessage <<"\t$USERPROFILE\\.libcutter (WINDOWS)" << std::endl;
+    appendKeyConfigFileStructure( errorMessage );
+    throw std::invalid_argument(errorMessage.str());
+}
+
+KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
+{
+KeyConfigParser::parseConfigFile(configFilePath);
 }
 
 KeySet KeyConfigParser::moveKeys() const

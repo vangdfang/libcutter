@@ -17,29 +17,14 @@ using namespace std;
 
 void usage(char *progname)
 {
-     printf("Usage: %s <device file> <gcode file> -f <key config file> [-d debug_level]\n",
+     printf("Usage: %s <device file> <gcode file> [-d debug_level]\n",
 	    progname);
-     cout << "\t-f - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
-     cout << endl;
-     cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
-     cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
-     cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
-     cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
-     cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
-     cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
-     cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
-     cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
-     cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
-     cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
-     cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
-     cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
      printf("%s\n", debug_msg.c_str());
      exit(1);
 }
 
 struct LaunchOptions {
      debug_prio debug_priority = err;
-     optional<KeyConfigParser> key_config;
      optional<string> device_file{};
      optional<string> gcode_file{};
 };
@@ -59,13 +44,6 @@ LaunchOptions parseArgs(int num_args, char * args[])
           {
                // The next argument is the debug level.
                options.debug_priority = (enum debug_prio)strtol(args[i + 1], NULL, 10);
-               i += 2;
-               continue;
-          }
-          else if (currentArg == "-f")
-          {
-               // The next argument is the config file.
-               options.key_config = KeyConfigParser(args[i + 1]);
                i += 2;
                continue;
           }
@@ -107,25 +85,19 @@ int main( int num_args, char * args[] )
 
      if (!launchOptions.device_file || !launchOptions.gcode_file)
      {
-          cerr << "Please provide a device file, GCode file, and key configuration file" << endl;
+          cerr << "Please provide a device file and GCode file" << endl;
           cerr << endl;
           cerr << "Provided device: " << launchOptions.device_file.value_or("(missing)") << endl;
           cerr << "Provided GCode: " << launchOptions.gcode_file.value_or("(missing)") << endl;
-          cerr << "Provided key config: " << (launchOptions.key_config ? "Provided" : "(missing)") << endl;
           cerr << endl;
           usage(args[0]);
      }
 
-     if (!launchOptions.key_config)
-     {
-          cerr << "Please provide a key configuration file (did you add the `-f` flag?)" << endl;
-          cerr << endl;
-          usage(args[0]);
-     }
+     KeyConfigParser key_config;
 
-     auto moveKeys = launchOptions.key_config->moveKeys();
-     auto lineKeys = launchOptions.key_config->lineKeys();
-     auto curveKeys = launchOptions.key_config->curveKeys();
+     auto moveKeys = key_config.moveKeys();
+     auto lineKeys = key_config.lineKeys();
+     auto curveKeys = key_config.curveKeys();
      ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
      ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
      ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };

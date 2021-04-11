@@ -10,9 +10,9 @@ using namespace std;
 
 int main( int numArgs, char * args[] )
 {
-    if( numArgs != 4 )
+    if( numArgs != 3 )
     {
-        cout<<"Usage: "<<args[0]<<" <device file> <input file> <key config file>"<<endl;
+        cout<<"Usage: "<<args[0]<<" <device file> <input file>"<<endl;
         cout << endl;
         cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
         cout << endl;
@@ -23,20 +23,6 @@ int main( int numArgs, char * args[] )
         cout << "\t\tCurve: b <x1> <y1> <x2> <y2> <x3> <y3> <x4> <y4>" << endl;
         cout << "\t\tSleep: t <millis>" << endl;
         cout << endl;
-        cout << "\t<key config file> - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
-        cout << endl;
-        cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
         exit(1);
     }
 
@@ -49,7 +35,7 @@ int main( int numArgs, char * args[] )
 
     Device::C c(args[1]);
 
-    KeyConfigParser keyConfig(args[3]);
+    KeyConfigParser keyConfig;
 
     auto moveKeys = keyConfig.moveKeys();
     auto lineKeys = keyConfig.lineKeys();

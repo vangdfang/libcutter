@@ -29,32 +29,17 @@ int main(int argc, char *argv[])
 
     signal(SIGINT, clean_up);
 
-    if( argc != 3 )
+    if( argc != 2 )
     {
         cout<<"Usage: "<<argv[0]<<" <device file>"<<endl;
         cout << endl;
         cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
-        cout << endl;
-        cout << "\t<key config file> - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
-        cout << endl;
-        cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
         exit(1);
     }
 
     Device::C cutter(argv[1]);
 
-    KeyConfigParser keyConfig(argv[2]);
+    KeyConfigParser keyConfig;
 
     auto moveKeys = keyConfig.moveKeys();
     auto lineKeys = keyConfig.lineKeys();

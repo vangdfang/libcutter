@@ -740,28 +740,13 @@ int main(int numArgs, char * args[] )
     svg_length_t height;
     svg_render_engine_t engine;
 
-    if( numArgs != 4 )
+    if( numArgs != 3 )
     {
-        cout<<"Usage: "<<args[0]<<" <svg file> <device file> <key config file>"<<endl;
+        cout<<"Usage: "<<args[0]<<" <svg file> <device file>"<<endl;
         cout << endl;
         cout << "\t<svg file> - SVG file to interpret ('foo.svg')" << endl;
         cout << endl;
         cout << "\t<device file> - file of the cutter. Looks like '/dev/serial/port' or '/dev/cu.usbserial-10'" << endl;
-        cout << endl;
-        cout << "\t<key config file> - key configuration file, which contains cutting keys. For example (with fake keys):" << endl;
-        cout << endl;
-        cout << "\t\tMOVE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tMOVE_KEY_3  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tLINE_KEY_3  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_0  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_1  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_2  0x0123abcd" << endl;
-        cout << "\t\tCURVE_KEY_3  0x0123abcd" << endl;
         exit(1);
     }
 
@@ -769,7 +754,7 @@ int main(int numArgs, char * args[] )
     c.stop();
     c.start();
 
-    KeyConfigParser keyConfig(args[3]);
+    KeyConfigParser keyConfig;
 
     auto moveKeys = keyConfig.moveKeys();
     auto lineKeys = keyConfig.lineKeys();

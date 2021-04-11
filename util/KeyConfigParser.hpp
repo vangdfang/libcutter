@@ -45,6 +45,7 @@ public:
 class KeyConfigParser
 {
 public:
+    KeyConfigParser();
     KeyConfigParser(const std::string& configFilePath);
 
     KeySet moveKeys() const;
@@ -52,6 +53,7 @@ public:
     KeySet curveKeys() const;
 
 private:
+    void parseConfigFile(const std::string& configFilePath);
     struct OptionalKeySet {
         std::optional<individual_key_t> key0;
         std::optional<individual_key_t> key1;
