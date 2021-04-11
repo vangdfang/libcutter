@@ -41,7 +41,7 @@ KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
 
     if (!fileStream.is_open())
     {
-        throw std::invalid_argument("Could not open config file");
+        throw std::invalid_argument("Could not open config file:" + configFilePath);
     }
 
     while (fileStream.good())
