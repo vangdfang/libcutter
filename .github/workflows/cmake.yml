@@ -18,6 +18,7 @@ jobs:
     - uses: actions/checkout@v2
     
     - name: Unzip libsvg
+      working-directory: ${{github.workspace}}/deps
       run: tar -xvf ${{github.workspace}}/deps/libsvg-0.1.4.tar.gz
       
     - name: Build & install libsvg
