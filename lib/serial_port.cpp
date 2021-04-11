@@ -57,14 +57,9 @@ bool serial_port::is_open()
 }
 
 
-serial_port::serial_port( const string & filename )
+void serial_port::p_open( const string & filename, int baud_rate_ )
 {
-    p_open( filename );
-}
-
-
-void serial_port::p_open( const string & filename )
-{
+    speed_t baud_rate = baud_rate_;
     termios newtio;
 
     fd = open( filename.c_str(), O_RDWR | O_NOCTTY );
@@ -92,7 +87,7 @@ void serial_port::p_open( const string & filename )
         serial_struct sstruct;
         ioctl( fd, TIOCGSERIAL, &oldsstruct );
         sstruct = oldsstruct;
-        sstruct.custom_divisor = sstruct.baud_base / 200000;
+        sstruct.custom_divisor = sstruct.baud_base / baud_rate;
         sstruct.flags &= ~ASYNC_SPD_MASK;
         sstruct.flags |= ASYNC_SPD_MASK & ASYNC_SPD_CUST;
         printf("Divisor=%i\n", sstruct.custom_divisor );
@@ -100,7 +95,6 @@ void serial_port::p_open( const string & filename )
         int r = ioctl( fd, TIOCSSERIAL, &sstruct );
         printf("r=%i\n",r);
         #elif( __APPLE__ )
-        speed_t baud_rate = 200000;
         if( ioctl( fd, IOSSIOSPEED, &baud_rate ) == -1 )
         {
             std::cout << "driver may not support IOSSIOSPEED" << std::endl;

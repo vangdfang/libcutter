@@ -61,7 +61,7 @@ namespace Device
 
     void C::init( const std::string filename )
     {
-        m_serial.p_open( filename );
+        m_serial.p_open( filename, baud_rate );
     }
 
     bool C::move_to( const xy &pt )

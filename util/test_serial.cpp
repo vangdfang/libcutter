@@ -49,7 +49,9 @@ int main(int argc, char* argv[])
         cout << "\t\t/dev/serial/port" << endl;
         return 1;
     }
-    ports.push_back(new serial_port(argv[1]));
+    auto sp = new serial_port();
+    sp->p_open(argv[1], 200000);
+    ports.push_back(sp);
 
     serial_port *p = ports.front();
 

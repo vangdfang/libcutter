@@ -52,13 +52,7 @@ bool serial_port::is_open()
 }
 
 
-serial_port::serial_port( const string & filename )
-{
-    p_open( filename );
-}
-
-
-void serial_port::p_open( const string & filename )
+void serial_port::p_open( const string & filename, int baud_rate )
 {
     DCB newdcb = { 0 };
     COMMTIMEOUTS newtimeouts = { 0 };
@@ -71,7 +65,7 @@ void serial_port::p_open( const string & filename )
             // Could not save comm state
         }
         newdcb.DCBlength = sizeof( newdcb );
-        newdcb.BaudRate = 200000;
+        newdcb.BaudRate = baud_rate;
         newdcb.ByteSize = 8;
         newdcb.StopBits = ONESTOPBIT;
         newdcb.Parity = NOPARITY;

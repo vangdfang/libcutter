@@ -60,6 +60,9 @@ namespace Device
                 return m_serial.is_open();
             }
         private:
+            /*This is in question and needs remeasured*/
+            /*See https://github.com/vangdfang/libcutter/issues/20 */
+            static const int baud_rate = 200000;
             inline int get_rand() const
             {
                 /*No, we're not bad at math. This is cryptographic padding

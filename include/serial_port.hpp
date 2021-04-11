@@ -44,16 +44,15 @@ class serial_port
 {
     public:
         serial_port();
-        serial_port( const std::string & filename );
         ~serial_port();
 
         bool is_open();
-        void p_open( const std::string & filename );
+        void p_open( const std::string & filename, int baud_rate );
         void p_close();
 
         std::size_t p_write( const uint8_t * data, std::size_t size );
         std::size_t p_read(  uint8_t * data, std::size_t size );
-	int delay(int);
+        int delay(int);
 
     protected:
     #if( !__WIN32 )
