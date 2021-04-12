@@ -37,7 +37,9 @@ if(HAS_SDL)
     list(APPEND cutter_files device_sim.cpp)
 endif(HAS_SDL)
 
+# Build static version for our default tools, to make them easier to use.
 add_library (cutter SHARED ${cutter_files})
+add_library (cutter_static STATIC ${cutter_files})
 if(HAS_SDL)
     target_link_libraries (cutter SDL SDL_gfx)
 endif(HAS_SDL)
