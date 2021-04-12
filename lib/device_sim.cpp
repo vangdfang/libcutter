@@ -155,15 +155,16 @@ namespace Device
     {
         if( renderer == NULL )
         {
+            SDL_Init( SDL_INIT_VIDEO );
             screen = SDL_CreateWindow( "Simulated Cutter", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0 );
             if( screen == NULL ) {
                 std::cerr << "Unable to create SDL2 window!" << std::endl;
                 return false;
             }
-            renderer = SDL_CreateRenderer( screen, -1, 0 );
+            renderer = SDL_CreateRenderer( screen, -1, SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_SOFTWARE );
             if( renderer == NULL ) {
                 std::cerr << "Unable to create SDL2 renderer!" << std::endl;
-                SDL_DestroyWindow(screen);
+                SDL_Quit();
                 return false;
             }
         }
@@ -181,6 +182,7 @@ namespace Device
             SDL_RenderReadPixels( renderer, NULL, SDL_PIXELFORMAT_ARGB8888, image->pixels, image->pitch );
             retn = SDL_SaveBMP( image, output_filename.c_str() );
             SDL_FreeSurface( image );
+            SDL_Quit();
         }
         running = false;
         return retn == 0;
