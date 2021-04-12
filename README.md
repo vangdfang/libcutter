@@ -85,7 +85,9 @@ chmod +x ./util/draw_gcode # or whichever file you want to run
 ./util/draw_gcode
 ```
 
-If you're on a Mac, this will probably show an error message that the file was not written by an authorized developer. You can fix this by:
+**Note**: `draw_svg` is dynamically linked to `libsvg` (among a few other things), which means that you must have installed `libsvg` to run it.
+
+**Note**: If you're on a Mac, this will probably show an error message that the file was not written by an authorized developer. You can fix this by:
 
 1. Run the above so that you get the error message.
 2. Open Settings > Security & Privacy > General
