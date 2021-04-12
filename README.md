@@ -34,6 +34,7 @@ CURVE_KEY_3  0x0123abcd
 Running any command that requires keys will also explain this format :).
 
 # Developer Notes
+
 ## Code formatting
 Suggested bcpp command:
 bcpp -s -f 2 -i 4 -bnl -fi $in -fo $out
@@ -74,3 +75,19 @@ To build for win32, you first need MinGW. On Debian install the following packag
 Once done, ./build-win32.sh has a sample for how to build the library and utilites.
 
 Note, currently some of the utilities do not build on Win32 if libsvg is not present.
+
+## Using prebuilt artifacts
+This project prebuilds binaries for Linux & Mac with every pull request. You can download and run these executables. To run them after downloading:
+
+```bash
+cd build-output/ # wherever you downloaded the output
+chmod +x ./util/draw_gcode # or whichever file you want to run
+./util/draw_gcode
+```
+
+If you're on a Mac, this will probably show an error message that the file was not written by an authorized developer. You can fix this by:
+
+1. Run the above so that you get the error message.
+2. Open Settings > Security & Privacy > General
+3. Under `Allow apps downloaded from`, you should see the name of the executable you just ran with a button `Allow anyway`. Click that button.
+4. Run the program again. It should now work!
