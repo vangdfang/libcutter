@@ -9,8 +9,8 @@ find_library(HAS_SDL NAMES SDL SDL_gfx)
 
 IF(APPLE)
     # Fix linking on 10.14+. See https://stackoverflow.com/questions/54068035
-    link_directories("/opt/local/lib")
-    include_directories("/opt/local/include")
+    link_directories("/usr/local/lib")
+    include_directories("/usr/local/include")
 
     # Fix for M1 Macs, where Homebrew uses a different location. See
     # https://apple.stackexchange.com/questions/410825/apple-silicon-port-all-homebrew-packages-under-usr-local-opt-to-opt-homebrew
