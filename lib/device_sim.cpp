@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <iostream>
+#include <sstream>
 #include "device_sim.hpp"
 #include "types.h"
 
@@ -156,7 +157,13 @@ namespace Device
         if( renderer == NULL )
         {
             SDL_Init( SDL_INIT_VIDEO );
-            screen = SDL_CreateWindow( "Simulated Cutter", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0 );
+            std::stringstream titleBuilder;
+            titleBuilder << "Simulated(";
+            titleBuilder << DEFAULT_SIZE_X;
+            titleBuilder << "x";
+            titleBuilder << DEFAULT_SIZE_Y;
+            titleBuilder << " mat)";
+            screen = SDL_CreateWindow( titleBuilder.str().c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0 );
             if( screen == NULL ) {
                 std::cerr << "Unable to create SDL2 window!" << std::endl;
                 return false;
