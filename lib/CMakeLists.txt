@@ -37,7 +37,15 @@ if(HAS_SDL)
     list(APPEND cutter_files device_sim.cpp)
 endif(HAS_SDL)
 
+# Build static version for our default tools, to make them easier to use. It's
+# technically better not to specify `SHARED` or `STATIC` at all, but we
+# generally want a reusable SHARED binary for app developers and a STATIC binary
+# to make our tools easy to share. This is the most straightforward way to do
+# this.
+#
+# https://cgold.readthedocs.io/en/latest/tutorials/libraries/static-shared.html
 add_library (cutter SHARED ${cutter_files})
+add_library (cutter_static STATIC ${cutter_files})
 if(HAS_SDL)
     target_link_libraries (cutter SDL2 SDL2_gfx)
 endif(HAS_SDL)
