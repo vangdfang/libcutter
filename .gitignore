@@ -2,3 +2,4 @@ build/
 build-win32/
 .DS_Store
 .libcutter
+deps/libsvg-0.1.4
