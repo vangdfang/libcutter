@@ -29,7 +29,7 @@ target_link_libraries (test_serial cutter_static)
 add_executable (draw_gcode draw_gcode.cpp gcode.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
 target_link_libraries (draw_gcode cutter_static)
 
-add_executable (draw_svg draw_svg.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
+add_executable (draw_svg draw_svg.cpp KeyConfigParser.hpp KeyConfigParser.cpp svg.cpp)
 target_link_libraries (draw_svg cutter_static svg jpeg png)
 
 add_executable (test_btea test_btea.cpp)
@@ -42,7 +42,7 @@ if(HAS_SDL)
     add_executable (draw_gcode_cv draw_gcode_cv.cpp gcode.cpp)
     target_link_libraries (draw_gcode_cv cutter_static jpeg png SDL2 SDL2_gfx)
 
-    add_executable (draw_svg_cv draw_svg_cv.cpp)
+    add_executable (draw_svg_cv draw_svg_cv.cpp svg.cpp)
     target_link_libraries (draw_svg_cv cutter_static svg jpeg png SDL2 SDL2_gfx)
 
     add_executable (interpreter_cv interpreter_cv.cpp)
