@@ -2,9 +2,11 @@ Serial communications and a simple test application for interfacing with cutters
 
 Film at 11.
 
-# Supported Cutters
-- Cricut Personal - Unknown which firmware version(s)
-- Cricut Expression - v2.31
+# Cutters
+- Cricut Personal - Unknown which firmware version(s) - firmware too old
+- Cricut Personal - unknown which firmware version(s) - works
+- Cricut Expression - v2.00 - firmware too old
+- Cricut Expression - v2.31 - works
 
 # Encryption / communication keys
 These are not provided with the library for various reasons. Please do not ask
