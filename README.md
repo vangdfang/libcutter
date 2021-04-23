@@ -3,10 +3,21 @@ Serial communications and a simple test application for interfacing with cutters
 Film at 11.
 
 # Cutters
-- Cricut Personal - Unknown which firmware version(s) - firmware too old
-- Cricut Personal - unknown which firmware version(s) - works
-- Cricut Expression - v2.00 - firmware too old
-- Cricut Expression - v2.31 - works
+
+This list is incomplete. If you have more information, please file a pull request to update this table or otherwise let us know:
+
+| Cutter            | Version | Status      |
+| ----------------- | ------- | ----------- |
+| Cricut Cake       |  v2.35  | should work |
+| Cricut Cake Mini  |  v1.54  | should work |
+| Cricut Create     |  v1.51  | should work |
+| Cricut Create     |  v1.54  | should work |
+| Cricut Expression |  v2.00  | too old     |
+| Cricut Expression |  v2.31  | works       |
+| Cricut Expression |  v2.34  | should work |
+| Cricut Expression |  v2.43  | should work |
+| Cricut Personal   |  v1.00  | too old     |
+| Cricut Personal   |  v1.34  | works       |
 
 # Encryption / communication keys
 These are not provided with the library for various reasons. Please do not ask
