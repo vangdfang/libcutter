@@ -85,13 +85,16 @@ void KeyConfigParser::parseConfigFile(const std::string& configFilePath)
         std::string keyValue;
         fileStream >> keyName >> keyValue;
 
-        auto& keySet = getKeySetForKeyName(keyName);
-        auto& specificKey = getKeyForKeyName(keySet, keyName);
-        const auto value = std::stoul(keyValue, nullptr /* idx */, 16 /* base */);
-        specificKey = value;
+        if(fileStream.good())
+        {
+            auto& keySet = getKeySetForKeyName(keyName);
+            auto& specificKey = getKeyForKeyName(keySet, keyName);
+            const auto value = std::stoul(keyValue, nullptr /* idx */, 16 /* base */);
+            specificKey = value;
 
-        // Debug
-        // std::cout << keyName << ": " << value << " (" << keyValue << ")" << std::endl;
+            // Debug
+            // std::cout << keyName << ": " << value << " (" << keyValue << ")" << std::endl;
+        }
     }
 
     if (!isComplete())
