@@ -3,6 +3,7 @@
 #include <iostream>
 #include <signal.h>
 #include <stdlib.h>
+#include <math.h>
 using namespace std;
 
 #include "KeyConfigParser.hpp"
@@ -20,12 +21,21 @@ uint64_t getCurTime( void )
     return (uint64_t)tv.tv_sec * 1000000 + (uint64_t)tv.tv_usec ;
 }
 
+double sqr( double x )
+{
+return x*x;
+}
+
+double dist( const xy & startpt, const xy & endpt )
+{
+return sqrt( sqr(endpt.x - startpt.x) + sqr(endpt.y - startpt.y) );
+}
 
 int main(int argc, char *argv[])
 {
-    xy startpt = { 1.5, 2 };
-    xy endpt   = { 4.5, 8 };
-    uint64_t     timer;
+    const xy endpt(0.5, 2);
+    const xy startpt(5.5, 8);
+    uint64_t timer;
 
     signal(SIGINT, clean_up);
 
@@ -63,11 +73,15 @@ int main(int argc, char *argv[])
     #define NUM_RUNS 5
     for( int i = 0; i < NUM_RUNS; ++i )
     {
+        cutter.cut_to( endpt );
         cutter.cut_to( startpt );
-        cutter.cut_to( endpt   );
     }
-    cutter.cut_to( endpt   );
-    cout << "Took " << ( getCurTime() - timer ) / 1000000.0 / ( NUM_RUNS * 2 + 1 ) << "per path. Multiply by two to get full travel time" << endl;
+    cutter.move_to( endpt );
+    timer = getCurTime() - timer;
+    double seconds = timer / 1000000.0;
+    cout << "Took: " << seconds << " seconds" << endl;
+    cout << "Took: " << seconds / ( NUM_RUNS * 2 ) << " seconds per path" << endl;
+    cout << "Speed:" << dist( startpt, endpt ) * NUM_RUNS * 2 / seconds << " inches per second" << endl;
 
     cutter.stop();
 
