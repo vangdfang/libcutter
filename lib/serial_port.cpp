@@ -84,16 +84,22 @@ void serial_port::p_open( const string & filename, int baud_rate_ )
 
         #if( __linux )
         //ASYNC_SPD_MASK
+        printf("Serial Port Parameters:\n");
+        printf("\tTargetBaud=%i\n", baud_rate_ );
         serial_struct sstruct;
         ioctl( fd, TIOCGSERIAL, &oldsstruct );
         sstruct = oldsstruct;
         sstruct.custom_divisor = sstruct.baud_base / baud_rate;
+        printf("\tBaudBase=%i\n", sstruct.baud_base );
         sstruct.flags &= ~ASYNC_SPD_MASK;
         sstruct.flags |= ASYNC_SPD_MASK & ASYNC_SPD_CUST;
-        printf("Divisor=%i\n", sstruct.custom_divisor );
+        printf("\tDivisor=%i\n", sstruct.custom_divisor );
+        double trueBaud = (double)sstruct.baud_base / (double)sstruct.custom_divisor;
+        printf("\tTrueBaud=%f\n", trueBaud );
+        printf("\tMisMatch=%f%%\n", 100.0 * ( 1.0 - trueBaud / baud_rate_ ) );
 
         int r = ioctl( fd, TIOCSSERIAL, &sstruct );
-        printf("r=%i\n",r);
+        printf("\tr=%i\n",r);
         #elif( __APPLE__ )
         if( ioctl( fd, IOSSIOSPEED, &baud_rate ) == -1 )
         {
