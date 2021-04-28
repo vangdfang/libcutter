@@ -219,10 +219,7 @@ namespace Device
 
     xy C::convert_to_internal( const xy &input )
     {
-        xy buf;
-        buf.x = INCHES_TO_C_UNITS * input.x;
-        buf.y = INCHES_TO_C_UNITS * input.y;
-        return buf;
+        return xy( INCHES_TO_C_UNITS * input.x, INCHES_TO_C_UNITS * input.y );
     }
 
     bool C::do_command( const xy &pt, const ckey_type k )
