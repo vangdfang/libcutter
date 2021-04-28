@@ -21,6 +21,8 @@ int main(int numArgs, char * args[] )
     }
 
     Device::C c( args[2] );
+    std::cout <<"Device Found:" << c.device_name() << std::endl;
+    std::cout <<"Mat Size:" << c.get_dimensions().x << "x" << c.get_dimensions().y << std::endl;
     c.stop();
     c.start();
 

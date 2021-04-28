@@ -47,11 +47,17 @@ namespace Device
     C::C()
         : m_serial()
     {
+        m_version_major = -1;
+        m_version_minor = -1;
+        m_model_id = model_id::UNKNOWN;
     }
 
     C::C( const std::string filename )
         : m_serial()
     {
+        m_version_major = -1;
+        m_version_minor = -1;
+        m_model_id = model_id::UNKNOWN;
         init( filename );
     }
 
@@ -62,6 +68,8 @@ namespace Device
     void C::init( const std::string filename )
     {
         m_serial.p_open( filename, baud_rate );
+        enumerate();
+        if(model_id::UNKNOWN) enumerate();//Try twice.
     }
 
     bool C::move_to( const xy &pt )
@@ -107,6 +115,108 @@ namespace Device
         return m_serial.p_write( cmd_stop, sizeof( cmd_stop ) );
     }
 
+    void C::enumerate()
+    {
+        uint8_t rbuf[7];
+        static const uint8_t tbuf[] = { 0x5, 0x12, 0, 0, 0, 0 };
+        if( m_serial.p_write( tbuf, sizeof(tbuf) ) != sizeof(tbuf ) )
+        {
+            std::cout <<"failed to write " << sizeof(tbuf) << " bytes" << std::endl;
+            return;
+        }
+
+        if( sizeof(rbuf) != m_serial.p_read( rbuf, sizeof( rbuf ) ) )
+        {
+            std::cout <<"failed to read " << sizeof(rbuf) << " bytes" << std::endl;
+        }
+
+        //parse out response
+        int n_bytes = rbuf[0];
+        int unk_zero_1 = rbuf[1];
+        int model_id = rbuf[2];
+        int unk_zero_3 = rbuf[3];
+        int version_major = rbuf[4];
+        int unk_zero_5 = rbuf[5];
+        int version_minor = rbuf[6];
+
+        if( n_bytes != 6 )
+        {
+            std::cout <<"version length response mismatch: " << n_bytes << " bytes" << std::endl;
+            return;
+        }
+
+        if( unk_zero_1 || unk_zero_3 || unk_zero_5 )
+        {
+            std::cout <<"unknown non-zero byte. Please report model and version number to project" << std::endl;
+            return;
+        }
+
+        m_version_major = version_major;
+        m_version_minor = version_minor;
+
+        switch( model_id )
+        {
+            case 0x14:
+                m_model_id = model_id::EXPRESSION;
+                break;
+
+            case 0x1e:
+                m_model_id = model_id::MINI;
+                break;
+
+            case 0x0a:
+                m_model_id = model_id::PERSONAL;
+                break;
+
+            default:
+                std::cout <<"unknown model identifier(0x" << std::hex << model_id;
+                std::cout << std::dec <<"). Please report model, model id, and firmware version to project" << std::endl;
+                return;
+        }
+    }
+
+    std::string C::device_make()
+    {
+        return "Cricut";
+    }
+
+    std::string C::device_model()
+    {
+        switch( m_model_id )
+        {
+            case model_id::EXPRESSION:
+                return "Expression";
+
+            case model_id::MINI:
+                return "Mini";
+
+            case model_id::PERSONAL:
+                return "Personal";
+
+            default:
+                return "Unknown";
+        }
+    }
+
+    std::string C::device_version()
+    {
+        if( m_version_major >= 0 && m_version_minor >= 0 )
+        {
+            return std::to_string(m_version_major) + "." + std::to_string(m_version_minor);
+        }
+        return "UnknownVersion";
+    }
+
+    int C::get_version_major()
+    {
+        return m_version_major;
+    }
+
+    int C::get_version_minor()
+    {
+        return m_version_minor;
+    }
+
     xy C::convert_to_internal( const xy &input )
     {
         xy buf;
@@ -144,10 +254,18 @@ namespace Device
 
     xy C::get_dimensions()
     {
-        xy buf;
-        buf.x = 6;
-        buf.y = 12;
-        return buf;
+        switch( m_model_id )
+        {
+            case model_id::EXPRESSION:
+                return xy(12,12);
+
+            case model_id::MINI:
+                return xy(8.5,12);;
+
+            case model_id::PERSONAL:
+            default://Legacy code
+                return xy(6,12);
+        }
     }
 }
 

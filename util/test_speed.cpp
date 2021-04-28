@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
 
     Device::C cutter(argv[1]);
 
+    cout <<"Device Found:" << cutter.device_name() << std::endl;
+    cout <<"Mat Size:" << cutter.get_dimensions().x << "x" << cutter.get_dimensions().y << std::endl;
+
     KeyConfigParser keyConfig;
 
     auto moveKeys = keyConfig.moveKeys();

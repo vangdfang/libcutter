@@ -44,6 +44,10 @@ namespace Device
             SDL_Surface * get_image();
             bool set_tool_width( const float tool_width );
 
+            virtual inline std::string device_make() { return "libcutter"; };
+            virtual inline std::string device_model() { return "Simulator"; };
+            virtual inline std::string device_version() { return "0.0"; };
+
         private:
             xy convert_to_internal( const xy &input );
             xy convert_to_external( const xy &input );

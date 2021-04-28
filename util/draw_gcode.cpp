@@ -103,6 +103,7 @@ int main( int num_args, char * args[] )
      ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };
 
      Device::C cutter(*launchOptions.device_file);
+     std::cout <<"Device Found:" << cutter.device_name() << std::endl;
      gcode parser(*launchOptions.gcode_file, cutter);
      gcode_base::set_debug(launchOptions.debug_priority);
 

@@ -59,7 +59,21 @@ namespace Device
             {
                 return m_serial.is_open();
             }
+            enum model_id
+            {
+                UNKNOWN,
+                PERSONAL,
+                MINI,/*unsupported but detectable*/
+                EXPRESSION
+            };
+            int get_version_major();
+            int get_version_minor();
+            std::string device_make();
+            std::string device_model();
+            std::string device_version();
+
         private:
+            void enumerate();
             /*This is in question and needs remeasured*/
             /*See https://github.com/vangdfang/libcutter/issues/20 */
             static const int baud_rate = 200000;
@@ -77,6 +91,9 @@ namespace Device
             ckey_type m_line_key;
             ckey_type m_curve_key;
             serial_port m_serial;
+            model_id m_model_id;
+            int m_version_major;
+            int m_version_minor;
     };
 }
 #endif

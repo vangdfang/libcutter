@@ -36,7 +36,10 @@ namespace Device
             Generic( std::string aSerial );
             virtual ~Generic();
             virtual inline void init( std::string aSerial ) {};
-            virtual inline const std::string device_name() { return "Virtual Device"; };
+            virtual inline std::string device_make() { return "libcutter"; };
+            virtual inline std::string device_model() { return "Virtual Device"; };
+            virtual inline std::string device_version() { return "0.0"; };
+            virtual inline std::string device_name() { return device_make() + " " + device_model() + " " + device_version(); };
             virtual bool move_to(const xy &aPoint) = 0;
             virtual bool cut_to(const xy &aPoint) = 0;
             virtual bool curve_to(const xy &p0, const xy &p1, const xy &p2, const xy &p3) = 0;
