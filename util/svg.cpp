@@ -159,10 +159,8 @@ xy svg_render_state_t::apply_transform( const xy & pt )
 
 bool svg_render_state_t::cut_to( const xy & pt )
 {
-    xy buf;
-
     cur_posn = pt;
-    buf = apply_transform( pt );
+    xy buf = apply_transform( pt );
     //cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
     return device.cut_to( buf );
 }
@@ -198,11 +196,8 @@ static svg_status_t end_element_callback( void * ptr )
 
 static svg_status_t move_callback( void * ptr, double x, double y )
 {
-    xy pt;
+    xy pt( x, y );
     //cout << "Moving to "<<x<<','<<y<<endl;
-
-    pt.x = x;
-    pt.y = y;
 
     ((svg_render_state_t*)ptr)->move_to( pt );
     return SVG_STATUS_SUCCESS;
@@ -211,12 +206,9 @@ static svg_status_t move_callback( void * ptr, double x, double y )
 
 static svg_status_t line_callback( void * ptr, double x, double y )
 {
-    xy point;
+    xy point(x, y);
 
     //cout << "Cutting to "<<x<<','<<y<<endl;
-
-    point.x = x;
-    point.y = y;
 
     ((svg_render_state_t*)ptr)->cut_to( point );
     return SVG_STATUS_SUCCESS;
