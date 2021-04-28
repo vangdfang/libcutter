@@ -1,21 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Mac, working",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "/usr/local/include",
-                "/opt/homebrew/include"
-            ],
-            "defines": [],
-            "macFrameworkPath": [],
-            "compilerPath": "/opt/homebrew/bin/gcc-10",
-            "cStandard": "gnu17",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "macos-gcc-arm64"
-        },
-        {
-            "name": "Mac CMAKE",
+            "name": "cmake",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
