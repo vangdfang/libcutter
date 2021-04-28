@@ -1,3 +1,4 @@
+*.swp
 build/
 build-win32/
 .DS_Store
