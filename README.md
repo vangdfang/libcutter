@@ -47,7 +47,7 @@ libcutter itself does not have many dependencies outside of OS-level serial port
 
 ### Installing libsvg
 
-If you're on a Mac (though you may need to wait for [the formula to be fixed](https://github.com/Homebrew/homebrew-core/pull/68760)):
+If you're on a Mac:
 
 ```bash
 brew install libsvg # or `brew install --build-from-source libsvg`
