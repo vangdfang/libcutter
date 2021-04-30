@@ -16,15 +16,15 @@ class svg_render_state_t
             set_transform(1,0,0,0,1,0);
         }
 
-        bool move_to( const xy & pt );
-        bool cut_to(  const xy & pt );
-        bool curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd );
+        svg_status move_to( const xy & pt );
+        svg_status cut_to(  const xy & pt );
+        svg_status curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd );
 
         void set_transform( double a, double b, double c, double d, double e, double f );
 
         xy get_cur_posn( void ){ return cur_posn; }
         xy get_last_moved_to( void ){ return last_moved_to; }
-        void path_arc_segment( const xy & center, double th0, double th1, double rx, double ry, double x_axis_rotation );
+        svg_status path_arc_segment( const xy & center, double th0, double th1, double rx, double ry, double x_axis_rotation );
     private:
         double transform[3][3];
         xy last_moved_to;
@@ -40,7 +40,7 @@ class svg_render_state_t
    This is adapted from libsvg-cairo under the
    LGPL 2.
 --------------------------------------------------*/
-void svg_render_state_t::path_arc_segment( const xy & center, double th0, double th1, double rx, double ry, double x_axis_rotation )
+svg_status svg_render_state_t::path_arc_segment( const xy & center, double th0, double th1, double rx, double ry, double x_axis_rotation )
 {
     double sin_th, cos_th;
     double a00, a01, a10, a11;
@@ -75,11 +75,11 @@ void svg_render_state_t::path_arc_segment( const xy & center, double th0, double
     pt3.x = pt3.x * a00 + a01 * pt3.y;
     pt3.y = pt3.x * a10 + a11 * pt3.y;
 
-    curve_to( cur_posn, pt1, pt2, pt3 );
+    return curve_to( cur_posn, pt1, pt2, pt3 );
 }
 
 
-bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd )
+svg_status svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & ptc, const xy & ptd )
 {
     xy bufa = apply_transform( pta );
     xy bufb = apply_transform( ptb );
@@ -87,18 +87,18 @@ bool svg_render_state_t::curve_to( const xy & pta, const xy & ptb, const xy & pt
     xy bufd = apply_transform( ptd );
     //cout<<"    transform curve to:"<<bufa.x<<','<<bufa.y<<'\t'<<bufb.x<<','<<bufb.y<<'\t'<<bufc.x<<','<<bufc.y<<'\t'<<bufd.x<<','<<bufd.y<<endl;
     cur_posn = ptd;
-    return device.curve_to( bufa, bufb, bufc, bufd );
+    return device.curve_to( bufa, bufb, bufc, bufd ) ? SVG_STATUS_SUCCESS : SVG_STATUS_IO_ERROR;
 }
 
 
-bool svg_render_state_t::move_to( const xy & pt )
+svg_status svg_render_state_t::move_to( const xy & pt )
 {
     xy buf;
     last_moved_to = pt;
     cur_posn      = pt;
     buf = apply_transform(pt);
     //cout<<"    transform mov to:"<<buf.x<<','<<buf.y<<endl;
-    return device.move_to( buf );
+    return device.move_to( buf ) ? SVG_STATUS_SUCCESS : SVG_STATUS_IO_ERROR;
 }
 
 
@@ -157,12 +157,12 @@ xy svg_render_state_t::apply_transform( const xy & pt )
 }
 
 
-bool svg_render_state_t::cut_to( const xy & pt )
+svg_status svg_render_state_t::cut_to( const xy & pt )
 {
     cur_posn = pt;
     xy buf = apply_transform( pt );
     //cout<<"    transform cut to:"<<buf.x<<','<<buf.y<<endl;
-    return device.cut_to( buf );
+    return device.cut_to( buf ) ? SVG_STATUS_SUCCESS : SVG_STATUS_IO_ERROR;
 }
 
 
@@ -199,8 +199,7 @@ static svg_status_t move_callback( void * ptr, double x, double y )
     xy pt( x, y );
     //cout << "Moving to "<<x<<','<<y<<endl;
 
-    ((svg_render_state_t*)ptr)->move_to( pt );
-    return SVG_STATUS_SUCCESS;
+    return ((svg_render_state_t*)ptr)->move_to( pt );
 }
 
 
@@ -210,8 +209,7 @@ static svg_status_t line_callback( void * ptr, double x, double y )
 
     //cout << "Cutting to "<<x<<','<<y<<endl;
 
-    ((svg_render_state_t*)ptr)->cut_to( point );
-    return SVG_STATUS_SUCCESS;
+    return ((svg_render_state_t*)ptr)->cut_to( point );
 }
 
 
@@ -222,12 +220,11 @@ static svg_status_t curve_callback( void * ptr, double x1, double y1, double x2,
     xy p3 = { x3, y3 };
 
     //cout <<"Doing a curve!"<<endl;
-    ((svg_render_state_t*)ptr)->curve_to(
+    return ((svg_render_state_t*)ptr)->curve_to(
         ((svg_render_state_t*)ptr)->get_cur_posn(),
         p1,
         p2,
         p3);
-    return SVG_STATUS_SUCCESS;
 }
 
 
@@ -237,12 +234,11 @@ static svg_status_t quadratic_curve_callback( void * ptr, double x1, double y1, 
     xy p2 = { x2, y2 };
 
     //cout <<"Doing a quadratic curve"<<endl;
-    ((svg_render_state_t*)ptr)->curve_to(
+    return ((svg_render_state_t*)ptr)->curve_to(
         ((svg_render_state_t*)ptr)->get_cur_posn(),
         p1,
         p1,
         p2);
-    return SVG_STATUS_SUCCESS;
 }
 
 
@@ -348,10 +344,13 @@ double y )
 
     for (i = 0; i < n_segs; i++)
     {
-        ((svg_render_state_t*)ptr)->path_arc_segment ( center,
+        if( SVG_STATUS_SUCCESS != ((svg_render_state_t*)ptr)->path_arc_segment ( center,
             th0 + i * th_arc / n_segs,
             th0 + (i + 1) * th_arc / n_segs,
-            rx, ry, x_axis_rotation);
+            rx, ry, x_axis_rotation) )
+        {
+            return SVG_STATUS_IO_ERROR;
+        }
     }
 
     return SVG_STATUS_SUCCESS;
@@ -362,8 +361,7 @@ static svg_status_t close_path_callback( void * ptr )
 {
     //cout <<"Closing path"<<endl;
 
-    ((svg_render_state_t*)ptr)->cut_to( ((svg_render_state_t*)ptr)->get_last_moved_to() );
-    return SVG_STATUS_SUCCESS;
+    return ((svg_render_state_t*)ptr)->cut_to( ((svg_render_state_t*)ptr)->get_last_moved_to() );
 }
 
 
@@ -594,29 +592,34 @@ static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_
     control_pts[11].x += rx->value;
     control_pts[11].y -= ry->value * KAPPA;
 
-    ((svg_render_state_t*)ptr)->curve_to(
+    svg_status status;
+    status = ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 0],
         control_pts[ 1],
         control_pts[ 2],
         control_pts[ 3]);
+    if( SVG_STATUS_SUCCESS != status) return status;
 
-    ((svg_render_state_t*)ptr)->curve_to(
+    status = ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 3],
         control_pts[ 4],
         control_pts[ 5],
         control_pts[ 6]);
+    if( SVG_STATUS_SUCCESS != status) return status;
 
-    ((svg_render_state_t*)ptr)->curve_to(
+    status = ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 6],
         control_pts[ 7],
         control_pts[ 8],
         control_pts[ 9]);
+    if( SVG_STATUS_SUCCESS != status) return status;
 
-    ((svg_render_state_t*)ptr)->curve_to(
+    status = ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 9],
         control_pts[10],
         control_pts[11],
         control_pts[ 0]);
+    if( SVG_STATUS_SUCCESS != status) return status;
 
     return SVG_STATUS_SUCCESS;
 }
@@ -631,6 +634,7 @@ svg_length_t * rx_len,
 svg_length_t * ry_len )
 {
     xy point;
+    svg_status status;
     double x      = x_len->value;
     double y      = y_len->value;
     double rx     = rx_len->value;
@@ -665,45 +669,58 @@ svg_length_t * ry_len )
     {
         point.x = x + rx;
         point.y = y;
-        ((svg_render_state_t*)ptr)->move_to( point );
+        status = ((svg_render_state_t*)ptr)->move_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.x = x + width - rx;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
-        arc_callback( ptr, rx, ry, 0, 0, 1, x + width, y + ry );
+        status = arc_callback( ptr, rx, ry, 0, 0, 1, x + width, y + ry );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.x = x + width;
         point.y = y + height - ry;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
-        arc_callback( ptr, rx, ry, 0, 0, 1, x + width - rx, y + height );
+        status = arc_callback( ptr, rx, ry, 0, 0, 1, x + width - rx, y + height );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.x = x + rx;
         point.y = y + height;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
-        arc_callback( ptr, rx, ry, 0, 0, 1, x, y + height - ry );
+        status = arc_callback( ptr, rx, ry, 0, 0, 1, x, y + height - ry );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.x = x;
         point.y = y + ry;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
-        arc_callback( ptr, rx, ry, 0, 0, 1, x + rx, y );
+        status = arc_callback( ptr, rx, ry, 0, 0, 1, x + rx, y );
+        if( SVG_STATUS_SUCCESS != status) return status;
     }
     else
     {
         point.x = x;
         point.y = y;
-        ((svg_render_state_t*)ptr)->move_to( point );
+        status = ((svg_render_state_t*)ptr)->move_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.x += width;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.y += height;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
 
         point.x -= width;
-        ((svg_render_state_t*)ptr)->cut_to( point );
+        status = ((svg_render_state_t*)ptr)->cut_to( point );
+        if( SVG_STATUS_SUCCESS != status) return status;
     }
     close_path_callback( ptr );
     return SVG_STATUS_SUCCESS;
