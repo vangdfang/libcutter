@@ -31,6 +31,19 @@ struct xy
 	xy(){};
 	xy(double _x, double _y){x=_x;y=_y;};
 	~xy(){};
+
+    //These comparison operators have no idea of floating point tolerance
+    //Nor that of the underlying machines, so they should only be used
+    //for exact comparisons.
+    bool operator==(const xy & that)
+    {
+        return x == that.x && y == that.y;
+    }
+    bool operator!=(const xy & that)
+    {
+        return x != that.x || y != that.y;
+    }
+
 };
 
 typedef uint32_t individual_key_t;
