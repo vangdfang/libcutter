@@ -18,7 +18,10 @@ IF(APPLE)
     include_directories("/opt/homebrew/include")
 ENDIF()
 
-add_executable (test_speed test_speed.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
+add_executable (enumerate enumerate.cpp ConfigParser.hpp ConfigParser.cpp)
+target_link_libraries (enumerate cutter_static)
+
+add_executable (test_speed test_speed.cpp ConfigParser.hpp ConfigParser.cpp)
 target_link_libraries (test_speed cutter_static)
 
 add_executable (test_endian test_endian.cpp)
@@ -26,16 +29,16 @@ add_executable (test_endian test_endian.cpp)
 add_executable (test_serial test_serial.cpp)
 target_link_libraries (test_serial cutter_static)
 
-add_executable (draw_gcode draw_gcode.cpp gcode.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
+add_executable (draw_gcode draw_gcode.cpp gcode.cpp ConfigParser.hpp ConfigParser.cpp)
 target_link_libraries (draw_gcode cutter_static)
 
-add_executable (draw_svg draw_svg.cpp KeyConfigParser.hpp KeyConfigParser.cpp svg.cpp)
+add_executable (draw_svg draw_svg.cpp ConfigParser.hpp ConfigParser.cpp svg.cpp)
 target_link_libraries (draw_svg cutter_static svg jpeg png)
 
 add_executable (test_btea test_btea.cpp)
 target_link_libraries (test_btea cutter_static)
 
-add_executable (interpreter interpreter.cpp KeyConfigParser.hpp KeyConfigParser.cpp)
+add_executable (interpreter interpreter.cpp ConfigParser.hpp ConfigParser.cpp)
 target_link_libraries (interpreter cutter_static)
 
 if(HAS_SDL)

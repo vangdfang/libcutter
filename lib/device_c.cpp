@@ -22,6 +22,7 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 #include <assert.h>
 #include "btea.h"
 #include "device_c.hpp"
@@ -37,12 +38,9 @@ struct __attribute__(( packed )) lmc_command
 
 namespace Device
 {
-    static const int DELAY = 170000;
+    static const int DELAY = 250000;
     static const float INCHES_TO_C_UNITS = 404.0f;
     static const float C_UNITS_TO_INCHES = ( 1 / (INCHES_TO_C_UNITS) );
-
-    static const uint8_t cmd_stop[] ={0x04, 0x22, 0x00, 0x00, 0x00 };
-    static const uint8_t cmd_start[]={0x04, 0x21, 0x00, 0x00, 0x00 };
 
     C::C()
         : m_serial()
@@ -106,29 +104,37 @@ namespace Device
     bool C::start()
     {
         m_serial.delay(DELAY);
-        return m_serial.p_write( cmd_start, sizeof( cmd_start ) );
+        return do_command_32( 0x21 );
     }
 
     bool C::stop()
     {
         m_serial.delay(DELAY);
-        return m_serial.p_write( cmd_stop, sizeof( cmd_stop ) );
+        return do_command_32( 0x22 );
     }
 
-    void C::enumerate()
+    bool C::do_command_32( uint32_t command )
     {
-        uint8_t rbuf[7];
-        static const uint8_t tbuf[] = { 0x5, 0x12, 0, 0, 0, 0 };
+        uint8_t tbuf[5] = { 4 };
+        uint32_t command_in_c_endian = htocl( command );
+        memcpy( tbuf + 1, &command_in_c_endian, sizeof command_in_c_endian );
+
         if( m_serial.p_write( tbuf, sizeof(tbuf) ) != sizeof(tbuf ) )
         {
-            std::cout <<"failed to write " << sizeof(tbuf) << " bytes" << std::endl;
-            return;
+            std::cerr <<"failed to send command " << command <<"(" << sizeof(tbuf)<< " bytes)"<< std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    bool C::enumerate()
+    {
+        if( !do_command_32( 0x12 ) )
+        {
+            return false;
         }
 
-        if( sizeof(rbuf) != m_serial.p_read( rbuf, sizeof( rbuf ) ) )
-        {
-            std::cout <<"failed to read " << sizeof(rbuf) << " bytes" << std::endl;
-        }
+        std::vector<uint8_t> rbuf = read_response();
 
         //parse out response
         int n_bytes = rbuf[0];
@@ -142,13 +148,13 @@ namespace Device
         if( n_bytes != 6 )
         {
             std::cout <<"version length response mismatch: " << n_bytes << " bytes" << std::endl;
-            return;
+            return false;
         }
 
         if( unk_zero_1 || unk_zero_3 || unk_zero_5 )
         {
             std::cout <<"unknown non-zero byte. Please report model and version number to project" << std::endl;
-            return;
+            return false;
         }
 
         m_version_major = version_major;
@@ -171,8 +177,9 @@ namespace Device
             default:
                 std::cout <<"unknown model identifier(0x" << std::hex << model_id;
                 std::cout << std::dec <<"). Please report model, model id, and firmware version to project" << std::endl;
-                return;
+                return false;
         }
+        return true;
     }
 
     std::string C::device_make()
@@ -222,9 +229,30 @@ namespace Device
         return xy( INCHES_TO_C_UNITS * input.x, INCHES_TO_C_UNITS * input.y );
     }
 
+    std::vector<uint8_t> C::read_response( void )
+    {
+        std::vector<uint8_t> retn;
+
+        uint8_t sz;
+        if( m_serial.p_read( &sz, 1 ) != 1 )
+        {
+            return retn;
+        }
+
+        retn.push_back( sz );
+
+        retn.resize( 1 + sz, 0 );
+        int i_read = m_serial.p_read( &retn[1], sz );
+        if( i_read != sz )
+        {
+            retn.resize( 1 + i_read );
+        }
+
+        return retn;
+    }
+
     bool C::do_command( const xy &pt, const ckey_type k )
     {
-        uint8_t rbuf[5];
         xy ptbuffer = convert_to_internal( pt );
         lmc_command l;
 
@@ -235,18 +263,27 @@ namespace Device
         l.data[2]=htocl( ptbuffer.x );
         btea(l.data, 3, k );
 
-        bool ret = false;
-        if( m_serial.p_write( (uint8_t*)&l, sizeof( l ) ) == sizeof( l ) )
+        if( m_serial.p_write( (uint8_t*)&l, sizeof( l ) ) != sizeof( l ) )
         {
-            int num_chars = m_serial.p_read( rbuf, sizeof( rbuf ) );
-            if ( 5 != num_chars )
-            {
-                std::cout << "expected 5, got " << num_chars << std::endl;
-                assert( false );
-            }
-            ret = true;
+            std::cerr <<"failed to do command("<<sizeof(l)<<" bytes)" << std::endl;
+            return false;
         }
-        return ret;
+
+        std::vector<uint8_t> rbuf = read_response();
+
+        if( rbuf.size() != 5 )
+        {
+            std::cerr << "command response packet: expected 5 bytes, got " << rbuf.size() << std::endl;
+            return false;
+        }
+
+        if( rbuf[0] != 4 )
+        {
+            std::cerr << "command response data: expected 4, got " << rbuf[0] << std::endl;
+            return false;
+        }
+
+        return true;
     }
 
     xy C::get_dimensions()

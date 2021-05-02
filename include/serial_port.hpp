@@ -54,8 +54,10 @@ class serial_port
         std::size_t p_write( const uint8_t * data, std::size_t size );
         std::size_t p_read(  uint8_t * data, std::size_t size );
         int delay(int);
+        void set_debug(int);
 
     protected:
+        int debug;
     #if( !__WIN32 )
         int  fd;
 

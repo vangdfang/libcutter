@@ -21,6 +21,7 @@
  */
 #include "serial_port.hpp"
 #include <cstdio>
+#include <iomanip>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <sys/types.h>
@@ -37,10 +38,10 @@
 using std::size_t;
 
 #include <iostream>
-using namespace std;
 
 serial_port::serial_port()
 {
+    debug = 0;
     fd = -1;
 }
 
@@ -56,8 +57,12 @@ bool serial_port::is_open()
     return fd >= 0;
 }
 
+void serial_port::set_debug(int level)
+{
+    debug = level;
+}
 
-void serial_port::p_open( const string & filename, int baud_rate_ )
+void serial_port::p_open( const std::string & filename, int baud_rate_ )
 {
     speed_t baud_rate = baud_rate_;
     termios newtio;
@@ -84,39 +89,36 @@ void serial_port::p_open( const string & filename, int baud_rate_ )
 
         #if( __linux )
         //ASYNC_SPD_MASK
-        printf("Serial Port Parameters:\n");
-        printf("\tTargetBaud=%i\n", baud_rate_ );
         serial_struct sstruct;
         ioctl( fd, TIOCGSERIAL, &oldsstruct );
         sstruct = oldsstruct;
         sstruct.custom_divisor = sstruct.baud_base / baud_rate;
-        printf("\tBaudBase=%i\n", sstruct.baud_base );
         sstruct.flags &= ~ASYNC_SPD_MASK;
         sstruct.flags |= ASYNC_SPD_MASK & ASYNC_SPD_CUST;
-        printf("\tDivisor=%i\n", sstruct.custom_divisor );
         double trueBaud = (double)sstruct.baud_base / (double)sstruct.custom_divisor;
-        printf("\tTrueBaud=%f\n", trueBaud );
-        printf("\tMisMatch=%f%%\n", 100.0 * ( 1.0 - trueBaud / baud_rate_ ) );
 
         int r = ioctl( fd, TIOCSSERIAL, &sstruct );
-        printf("\tr=%i\n",r);
+        if(debug)
+        {
+            std::cerr<<"Serial Port Parameters:"<<std::endl;;
+            std::cerr<<"\tTargetBaud=" << baud_rate_ << std::endl;
+            std::cerr<<"\tBaudBase=" << sstruct.baud_base << std::endl;
+            std::cerr<<"\tDivisor=" << sstruct.custom_divisor << std::endl;
+            std::cerr<<"\tTrueBaud=" << trueBaud << std::endl;
+            std::cerr<<"\tMisMatch=" << 100.0 * ( 1.0 - trueBaud / baud_rate_ ) << "%" <<std::endl;
+            std::cerr<<"\tr=" << r <<std::endl;
+        }
         #elif( __APPLE__ )
         if( ioctl( fd, IOSSIOSPEED, &baud_rate ) == -1 )
         {
-            std::cout << "driver may not support IOSSIOSPEED" << std::endl;
+            std::cerr << "driver may not support IOSSIOSPEED" << std::endl;
         }
         #endif
     }
-
-    #ifdef SERIAL_PORT_DEBUG_MODE
-    #if SERIAL_PORT_DEBUG_MODE
-    char cmd[100];
-    sprintf(cmd, "stty -F %s", filename.c_str() );
-    system(cmd);
-    sprintf(cmd, "setserial -a %s", filename.c_str() );
-    system(cmd);
-    #endif
-    #endif
+    else
+    {
+        std::cerr << "unable to open serial port:" << filename << std::endl;
+    }
 }
 
 
@@ -131,20 +133,32 @@ void serial_port::p_close()
         close( fd );
         fd = -1;
     }
-    std::cout << "port closed" << std::endl;
+    std::cerr << "port closed" << std::endl;
 }
 
 
 size_t serial_port::p_write( const uint8_t * data, size_t size )
 {
-    size_t   i;
     int      count = 0;
-    for( i = 0; i < size; ++i )
+    char     prev_fill;
+
+    if(debug)
+    {
+        std::cerr << "p_write(" << size << "):";
+        //config stream
+        prev_fill = std::cerr.fill();
+	    std::cerr << "0x";
+        std::cerr << std::hex;
+        std::cerr.fill('0');
+    }
+
+    for( size_t i = 0; i < size; ++i )
     {
 	delay(1000);
 
         if( write( fd, data, 1 ) == 1 )
         {
+            if(debug) std::cerr << std::setw(2) << (int)*data;
             data++;
             count++;
         }
@@ -154,17 +168,52 @@ size_t serial_port::p_write( const uint8_t * data, size_t size )
         }
 
     }
+
+    if(debug)
+    {
+        std::cerr << std::endl;
+        //unconfig stream
+        std::cerr << std::dec;
+        std::cerr.fill(prev_fill);
+    }
+
     return count;
 }
 
 
 size_t serial_port::p_read( uint8_t * data, size_t size )
 {
+    char prev_fill;
+
+    if(debug)
+    {
+        std::cerr << "p_read(" << size << "):";
+        //config stream
+        prev_fill = std::cerr.fill();
+	    std::cerr << "0x";
+        std::cerr << std::hex;
+        std::cerr.fill('0');
+    }
+
     if( fd < 0 )
     {
-        cout<<"Error reading from closed port"<<endl;
+        std::cerr<<"Error reading from closed port"<<std::endl;
     }
-    return read( fd, (void*)data, size );
+    int retn = read( fd, (void*)data, size );
+
+    if(debug)
+    {
+        for( ssize_t i = 0; i < retn; ++i )
+        {
+            std::cerr << std::setw(2) << (int)data[i];
+        }
+        std::cerr << std::endl;
+        //unconfig stream
+        std::cerr << std::dec;
+        std::cerr.fill(prev_fill);
+    }
+
+    return retn < 0 ? 0 : retn;
 }
 
 

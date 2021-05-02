@@ -37,6 +37,7 @@ using namespace std;
 
 serial_port::serial_port()
 {
+    debug = 0;
     fd = INVALID_HANDLE_VALUE;
 }
 
@@ -52,6 +53,10 @@ bool serial_port::is_open()
     return fd != INVALID_HANDLE_VALUE;
 }
 
+void serial_port::set_debug(int level)
+{
+    debug = level;
+}
 
 void serial_port::p_open( const string & filename, int baud_rate )
 {
@@ -135,7 +140,7 @@ size_t serial_port::p_read( uint8_t * data, size_t size )
 
     if( fd == INVALID_HANDLE_VALUE )
     {
-        cout<<"Error reading from closed port"<<endl;
+        std::cerr << "Error reading from closed port" << std::endl;
     }
 
     if( !ReadFile( fd, data, size, &bytesRead, NULL ) )

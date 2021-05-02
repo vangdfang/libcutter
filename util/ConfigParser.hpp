@@ -40,17 +40,19 @@ public:
  * CURVE_KEY_1 0123abcd
  * CURVE_KEY_2 0123abcd
  * CURVE_KEY_3 0123abcd
+ * SERIAL_DEBUG 0
  * ```
  */
-class KeyConfigParser
+class ConfigParser
 {
 public:
-    KeyConfigParser();
-    KeyConfigParser(const std::string& configFilePath);
+    ConfigParser();
+    ConfigParser(const std::string& configFilePath);
 
     KeySet moveKeys() const;
     KeySet lineKeys() const;
     KeySet curveKeys() const;
+    inline int serialDebug() const { return m_serialDebug; }
 
 private:
     void parseConfigFile(const std::string& configFilePath);
@@ -70,10 +72,12 @@ private:
 
     OptionalKeySet& getKeySetForKeyName(std::string keyName);
     std::optional<individual_key_t>& getKeyForKeyName(OptionalKeySet& keySet, std::string keyName) const;
+    int & getOptionForConfigName(std::string configName);
 
     OptionalKeySet m_moveKeys{};
     OptionalKeySet m_lineKeys{};
     OptionalKeySet m_curveKeys{};
+    int m_serialDebug;
 };
 
 #endif

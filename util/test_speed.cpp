@@ -6,7 +6,7 @@
 #include <math.h>
 using namespace std;
 
-#include "KeyConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 void clean_up(int signal)
 {
@@ -50,15 +50,18 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    Device::C cutter(argv[1]);
+    ConfigParser Config;
+
+    Device::C cutter;
+    cutter.set_serial_debug(Config.serialDebug());
+    cutter.init(argv[1]);
 
     cout <<"Device Found:" << cutter.device_name() << std::endl;
     cout <<"Mat Size:" << cutter.get_dimensions().x << "x" << cutter.get_dimensions().y << std::endl;
 
-    KeyConfigParser keyConfig;
 
-    auto moveKeys = keyConfig.moveKeys();
-    auto lineKeys = keyConfig.lineKeys();
+    auto moveKeys = Config.moveKeys();
+    auto lineKeys = Config.lineKeys();
     ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
     ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
 
