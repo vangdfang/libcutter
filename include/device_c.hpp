@@ -22,8 +22,9 @@
 #ifndef DEVICE_C_HPP
 #define DEVICE_C_HPP
 
-#include <stdint.h>
+#include <cstdint>
 #include <cstring>
+#include <vector>
 #include "device.hpp"
 #include "types.h"
 #include "serial_port.hpp"
@@ -76,8 +77,11 @@ namespace Device
                 m_serial.set_debug( level );
             }
 
+            /*usually handled as part of init()*/
+            /*but here for debugging purposes*/
+            bool enumerate();
+
         private:
-            void enumerate();
             /*This is in question and needs remeasured*/
             /*See https://github.com/vangdfang/libcutter/issues/20 */
             static const int baud_rate = 200000;
@@ -91,6 +95,8 @@ namespace Device
             };
             xy convert_to_internal( const xy &input );
             bool do_command( const xy &pt, const ckey_type k );
+            bool do_command_32( uint32_t );
+            std::vector<uint8_t> read_response();
             ckey_type m_move_key;
             ckey_type m_line_key;
             ckey_type m_curve_key;
