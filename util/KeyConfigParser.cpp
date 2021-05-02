@@ -132,7 +132,7 @@ KeyConfigParser::KeyConfigParser()
         std::string home_config = std::string(home) + sep + config_filename;
         if( access( home_config.c_str(), R_OK ) == 0 )
         {
-            parseConfigFile( home + config_filename );
+            parseConfigFile( home_config );
             return;
         }
     }
