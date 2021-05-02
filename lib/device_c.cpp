@@ -38,7 +38,7 @@ struct __attribute__(( packed )) lmc_command
 
 namespace Device
 {
-    static const int DELAY = 170000;
+    static const int DELAY = 250000;
     static const float INCHES_TO_C_UNITS = 404.0f;
     static const float C_UNITS_TO_INCHES = ( 1 / (INCHES_TO_C_UNITS) );
 
