@@ -5,7 +5,7 @@
 #include <unistd.h>
 
 #include "device_c.hpp"
-#include "KeyConfigParser.hpp"
+#include "ConfigParser.hpp"
 #include "svg.hpp"
 
 int main(int numArgs, char * args[] )
@@ -20,17 +20,20 @@ int main(int numArgs, char * args[] )
         exit(1);
     }
 
-    Device::C c( args[2] );
+    ConfigParser Config;
+
+    Device::C c;
+    c.set_serial_debug(Config.serialDebug());
+    c.init(args[2]);
+
     std::cout <<"Device Found:" << c.device_name() << std::endl;
     std::cout <<"Mat Size:" << c.get_dimensions().x << "x" << c.get_dimensions().y << std::endl;
     c.stop();
     c.start();
 
-    KeyConfigParser keyConfig;
-
-    auto moveKeys = keyConfig.moveKeys();
-    auto lineKeys = keyConfig.lineKeys();
-    auto curveKeys = keyConfig.curveKeys();
+    auto moveKeys = Config.moveKeys();
+    auto lineKeys = Config.lineKeys();
+    auto curveKeys = Config.curveKeys();
     ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
     ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
     ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };

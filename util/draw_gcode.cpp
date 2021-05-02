@@ -9,7 +9,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "device_c.hpp"
-#include "KeyConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 using namespace std;
 
@@ -93,16 +93,19 @@ int main( int num_args, char * args[] )
           usage(args[0]);
      }
 
-     KeyConfigParser key_config;
+     ConfigParser config;
 
-     auto moveKeys = key_config.moveKeys();
-     auto lineKeys = key_config.lineKeys();
-     auto curveKeys = key_config.curveKeys();
+     auto moveKeys = config.moveKeys();
+     auto lineKeys = config.lineKeys();
+     auto curveKeys = config.curveKeys();
      ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
      ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
      ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };
 
-     Device::C cutter(*launchOptions.device_file);
+
+     Device::C cutter;
+     cutter.set_serial_debug(config.serialDebug());
+     cutter.init(*launchOptions.device_file);
      std::cout <<"Device Found:" << cutter.device_name() << std::endl;
      gcode parser(*launchOptions.gcode_file, cutter);
      gcode_base::set_debug(launchOptions.debug_priority);

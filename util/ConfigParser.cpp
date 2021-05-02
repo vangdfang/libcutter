@@ -1,4 +1,4 @@
-#include "KeyConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -44,7 +44,7 @@ namespace
     }
 } // namespace anonymous
 
-static void appendKeyConfigFileStructure(std::ostream & errorMessage)
+static void appendConfigFileStructure(std::ostream & errorMessage)
 {
     errorMessage <<"a .libcutter file must be supplied with the following contents:" << std::endl;
     errorMessage << std::endl;
@@ -62,7 +62,7 @@ static void appendKeyConfigFileStructure(std::ostream & errorMessage)
     errorMessage << "\tCURVE_KEY_3  0x0123abcd" << std::endl;
 }
 
-void KeyConfigParser::parseConfigFile(const std::string& configFilePath)
+void ConfigParser::parseConfigFile(const std::string& configFilePath)
 {
     // Open the file!
     std::ifstream fileStream(configFilePath);
@@ -71,7 +71,7 @@ void KeyConfigParser::parseConfigFile(const std::string& configFilePath)
     {
         std::stringstream errorMessage;
         errorMessage << "Could not open config file:" << configFilePath << std::endl;
-        appendKeyConfigFileStructure( errorMessage );
+        appendConfigFileStructure( errorMessage );
         throw std::invalid_argument( errorMessage.str() );
     }
 
@@ -87,6 +87,15 @@ void KeyConfigParser::parseConfigFile(const std::string& configFilePath)
 
         if(fileStream.good())
         {
+            try
+            {
+                int & option = getOptionForConfigName( keyName );
+                option = std::stoul(keyValue, nullptr/* idx */, 16 /* base */);
+                continue;
+            }
+            catch (const std::invalid_argument& ia) {
+            }
+
             auto& keySet = getKeySetForKeyName(keyName);
             auto& specificKey = getKeyForKeyName(keySet, keyName);
             const auto value = std::stoul(keyValue, nullptr /* idx */, 16 /* base */);
@@ -110,8 +119,9 @@ void KeyConfigParser::parseConfigFile(const std::string& configFilePath)
     }
 }
 
-KeyConfigParser::KeyConfigParser()
+ConfigParser::ConfigParser()
 {
+    m_serialDebug = 0;
     std::string config_filename = ".libcutter";
     if( access( config_filename.c_str(), R_OK ) == 0 )
     {
@@ -144,31 +154,32 @@ KeyConfigParser::KeyConfigParser()
     errorMessage <<"\t.libcutter" << std::endl;
     errorMessage <<"\t$HOME/.libcutter (POSIX)" << std::endl;
     errorMessage <<"\t$USERPROFILE\\.libcutter (WINDOWS)" << std::endl;
-    appendKeyConfigFileStructure( errorMessage );
+    appendConfigFileStructure( errorMessage );
     throw std::invalid_argument(errorMessage.str());
 }
 
-KeyConfigParser::KeyConfigParser(const std::string& configFilePath)
+ConfigParser::ConfigParser(const std::string& configFilePath)
 {
-KeyConfigParser::parseConfigFile(configFilePath);
+    m_serialDebug = 0;
+    ConfigParser::parseConfigFile(configFilePath);
 }
 
-KeySet KeyConfigParser::moveKeys() const
+KeySet ConfigParser::moveKeys() const
 {
     return toKeySet(m_moveKeys);
 }
 
-KeySet KeyConfigParser::lineKeys() const
+KeySet ConfigParser::lineKeys() const
 {
     return toKeySet(m_lineKeys);
 }
 
-KeySet KeyConfigParser::curveKeys() const
+KeySet ConfigParser::curveKeys() const
 {
     return toKeySet(m_curveKeys);
 }
 
-std::string KeyConfigParser::OptionalKeySet::str() const
+std::string ConfigParser::OptionalKeySet::str() const
 {
     std::stringstream str;
     str << "[";
@@ -183,7 +194,7 @@ std::string KeyConfigParser::OptionalKeySet::str() const
     return str.str();
 }
 
-bool KeyConfigParser::isKeySetComplete(const KeyConfigParser::OptionalKeySet& keySet) const
+bool ConfigParser::isKeySetComplete(const ConfigParser::OptionalKeySet& keySet) const
 {
     return keySet.key0.has_value() &&
         keySet.key1.has_value() &&
@@ -191,14 +202,14 @@ bool KeyConfigParser::isKeySetComplete(const KeyConfigParser::OptionalKeySet& ke
         keySet.key3.has_value();
 }
 
-bool KeyConfigParser::isComplete() const
+bool ConfigParser::isComplete() const
 {
     return isKeySetComplete(m_moveKeys) &&
         isKeySetComplete(m_lineKeys) &&
         isKeySetComplete(m_curveKeys);
 }
 
-KeySet KeyConfigParser::toKeySet(const KeyConfigParser::OptionalKeySet& keySet) const
+KeySet ConfigParser::toKeySet(const ConfigParser::OptionalKeySet& keySet) const
 {
     return KeySet(keySet.key0.value(),
         keySet.key1.value(),
@@ -206,7 +217,7 @@ KeySet KeyConfigParser::toKeySet(const KeyConfigParser::OptionalKeySet& keySet) 
         keySet.key3.value());
 }
 
-KeyConfigParser::OptionalKeySet& KeyConfigParser::getKeySetForKeyName(std::string keyName)
+ConfigParser::OptionalKeySet& ConfigParser::getKeySetForKeyName(std::string keyName)
 {
     if (startsWith(keyName, "MOVE_KEY"))
     {
@@ -226,7 +237,19 @@ KeyConfigParser::OptionalKeySet& KeyConfigParser::getKeySetForKeyName(std::strin
     }
 }
 
-std::optional<individual_key_t>& KeyConfigParser::getKeyForKeyName(KeyConfigParser::OptionalKeySet& keySet, std::string keyName) const
+int & ConfigParser::getOptionForConfigName(std::string configName)
+{
+    if( configName == "SERIAL_DEBUG" )
+    {
+        return m_serialDebug;
+    }
+    else
+    {
+        throw std::invalid_argument(std::string("Unknown key: ").append(configName));
+    }
+}
+
+std::optional<individual_key_t>& ConfigParser::getKeyForKeyName(ConfigParser::OptionalKeySet& keySet, std::string keyName) const
 {
     if (endsWith(keyName, "0"))
     {

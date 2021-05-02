@@ -6,7 +6,7 @@
 using namespace std;
 
 #include "device_c.hpp"
-#include "KeyConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 int main( int numArgs, char * args[] )
 {
@@ -38,11 +38,11 @@ int main( int numArgs, char * args[] )
 
     Device::C c(args[1]);
 
-    KeyConfigParser keyConfig;
+    ConfigParser Config;
 
-    auto moveKeys = keyConfig.moveKeys();
-    auto lineKeys = keyConfig.lineKeys();
-    auto curveKeys = keyConfig.curveKeys();
+    auto moveKeys = Config.moveKeys();
+    auto lineKeys = Config.lineKeys();
+    auto curveKeys = Config.curveKeys();
     ckey_type move_key = { moveKeys.key0, moveKeys.key1, moveKeys.key2, moveKeys.key3 };
     ckey_type line_key = { lineKeys.key0, lineKeys.key1, lineKeys.key2, lineKeys.key3 };
     ckey_type curve_key = { curveKeys.key0, curveKeys.key1, curveKeys.key2, curveKeys.key3 };

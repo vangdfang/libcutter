@@ -6,8 +6,6 @@
 #include <math.h>
 using namespace std;
 
-#include "KeyConfigParser.hpp"
-
 int main(int argc, char *argv[])
 {
     if( argc != 2 )
