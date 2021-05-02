@@ -71,6 +71,10 @@ namespace Device
             std::string device_make();
             std::string device_model();
             std::string device_version();
+            inline void set_serial_debug( int level )
+            {
+                m_serial.set_debug( level );
+            }
 
         private:
             void enumerate();
