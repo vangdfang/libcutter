@@ -593,6 +593,11 @@ static svg_status_t render_ellipse_callback( void * ptr, svg_length_t * cx, svg_
     control_pts[11].y -= ry->value * KAPPA;
 
     svg_status status;
+
+    // Move to first control point of ellipse
+    status = ((svg_render_state_t*)ptr)->move_to(control_pts[0]);
+    if( SVG_STATUS_SUCCESS != status) return status;
+						  
     status = ((svg_render_state_t*)ptr)->curve_to(
         control_pts[ 0],
         control_pts[ 1],
