@@ -70,6 +70,6 @@ class serial_port
         DCB olddcb;
     #endif
 
-        const uint64_t getTime();
+        uint64_t getTime();
 };
 #endif
