@@ -23,7 +23,7 @@ int btea( uint32_t * v, int32_t n, const uint32_t * k_in )
     uint32_t sum;
     uint32_t e;
     uint32_t k[4];
-    int status;
+    int status = 2;
     unsigned int word_count;
 
     if( n >= 0 )
