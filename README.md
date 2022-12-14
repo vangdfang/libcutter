@@ -17,6 +17,7 @@ This list is incomplete. If you have more information, please file a pull reques
 | Cricut Expression |  v2.34  | should work |
 | Cricut Expression |  v2.43  | should work |
 | Cricut Personal   |  v1.00  | too old     |
+| Cricut Personal   |  v1.31  | works       |
 | Cricut Personal   |  v1.34  | works       |
 
 # Encryption / communication keys
